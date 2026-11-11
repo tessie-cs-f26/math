@@ -150,16 +150,15 @@ footer p{margin:.25rem 0}
   <div class="settings">
     <div class="seg"><span class="seg-name" id="factsLbl">Facts</span>
       <div class="seg-btns" role="group" aria-labelledby="factsLbl" data-setting="mode">
-        <button type="button" data-v="add" aria-pressed="true">Addition</button>
+        <button type="button" data-v="add" aria-pressed="false">Addition</button>
         <button type="button" data-v="sub" aria-pressed="false">Subtraction</button>
-        <button type="button" data-v="both" aria-pressed="false">Both</button>
+        <button type="button" data-v="both" aria-pressed="true">Both</button>
       </div>
     </div>
     <div class="seg"><span class="seg-name" id="timeLbl">Time</span>
       <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
         <button type="button" data-v="30" aria-pressed="false">30 s</button>
         <button type="button" data-v="60" aria-pressed="true">60 s</button>
-        <button type="button" data-v="120" aria-pressed="false">2 min</button>
       </div>
     </div>
   </div>
@@ -202,7 +201,7 @@ footer p{margin:.25rem 0}
   </div>
 
   <footer>
-    <p>Type your answer. It checks itself once you’ve typed enough digits, so there’s no need to press Enter. <span class="kbd">Backspace</span> fixes a digit. <span class="kbd">X</span> resets.</p>
+    <p>Type your answer and press <span class="kbd">Enter</span>. <span class="kbd">Backspace</span> fixes a digit. <span class="kbd">X</span> resets.</p>
   </footer>
 </div>
 
@@ -215,9 +214,9 @@ footer p{margin:.25rem 0}
     FACTS.sub.push({q: (a + b) + " − " + b + " =", ans: a, key: (a + b) + "-" + b});
   }
   var MODE_NAMES = {add:"Addition", sub:"Subtraction", both:"Both"};
-  var DUR_NAMES = {30:"30 seconds", 60:"60 seconds", 120:"2 minutes"};
+  var DUR_NAMES = {30:"30 seconds", 60:"60 seconds"};
 
-  var mode = "add", dur = 60, state = "ready";
+  var mode = "both", dur = 60, state = "ready";
   var deck = [], queue = [], done = [], typed = "", correct = 0, attempted = 0;
   var misses = new Map(), endAt = 0, raf = 0, overAt = 0;
 
@@ -326,8 +325,7 @@ footer p{margin:.25rem 0}
     if (state !== "playing") return;
     if (typed.length >= 2) return;
     typed += d;
-    if (typed.length >= String(queue[0].ans).length) submit();
-    else render(false);
+    render(false);
   }
   function back(){
     if (state !== "playing" || !typed) return;
