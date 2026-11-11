@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SpeedCarry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfbf7; --ink:#1d2a5c; --muted:#6b7394; --line:#d9dcea; --field:#ffffff;
+  --unit:#e9b414; --rod:#3a6fd0; --good:#1f8456; --bad:#c9403a;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+    --unit:#f2c230; --rod:#6f9ef0; --good:#4cc48b; --bad:#ff7a73;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+  --unit:#f2c230; --rod:#6f9ef0; --good:#4cc48b; --bad:#ff7a73;
+  color-scheme:dark;
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; min-height:100%;
+  background:var(--paper); color:var(--ink);
+  font-family:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric:tabular-nums;
+  line-height:1.45;
+}
+.app{max-width:40rem; margin:0 auto; padding:1.25rem 1.25rem 2rem}
+header{display:flex; align-items:center; gap:.85rem}
+header svg{flex:none; width:3.6rem; height:auto}
+h1{margin:0; font-size:2rem; font-weight:700; letter-spacing:-.02em; line-height:1.1}
+.sub{margin:.35rem 0 0; color:var(--muted); font-size:.95rem; max-width:34rem}
+
+.settings{display:flex; flex-wrap:wrap; gap:.75rem 1.5rem; margin:1.25rem 0 1rem}
+.seg{display:flex; align-items:center; gap:.5rem}
+.seg-name{font-size:.85rem; color:var(--muted)}
+.seg-btns{display:inline-flex; border:1.5px solid var(--line); border-radius:999px; padding:2px; background:var(--field)}
+.seg-btns button{
+  font:inherit; font-size:.88rem; color:var(--ink); background:transparent; border:0;
+  padding:.35rem .8rem; border-radius:999px; cursor:pointer;
+}
+.seg-btns button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+.seg-btns button:disabled{cursor:not-allowed; opacity:.55}
+button:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
+
+.stats{display:flex; justify-content:space-between; align-items:flex-end; margin-top:.5rem}
+.stat{display:flex; flex-direction:column}
+.stat.right{align-items:flex-end}
+.big{font-size:2.4rem; font-weight:700; line-height:1}
+.of{color:var(--muted); font-weight:500}
+.lbl{font-size:.8rem; color:var(--muted)}
+.timebar{height:6px; background:var(--line); border-radius:3px; margin:.6rem 0 0; overflow:hidden}
+#timefill{height:100%; width:100%; background:var(--rod); transform-origin:left center}
+#timefill.low{background:var(--bad)}
+
+.stage{min-height:21rem; display:flex; flex-direction:column; justify-content:center; padding:1.25rem 0}
+[hidden]{display:none !important}
+
+.ready{text-align:center}
+.ready p{font-size:1.3rem; margin:0 0 1rem}
+.kbd{display:inline-block; border:1.5px solid var(--line); border-bottom-width:3px; border-radius:6px; padding:0 .4em; font-size:.9em; background:var(--field)}
+.primary{
+  font:inherit; font-weight:700; font-size:1.1rem; color:var(--paper); background:var(--rod);
+  border:0; border-radius:999px; padding:.7rem 1.6rem; cursor:pointer;
+}
+
+.board{display:flex; flex-direction:column; gap:.3rem}
+.row{display:grid; grid-template-columns:1fr 1fr; column-gap:.4em; align-items:baseline}
+.row .q{text-align:right; white-space:nowrap}
+.row .a{text-align:left; white-space:nowrap}
+.row.done{font-size:1.2rem; color:var(--muted)}
+.row.done.good .a{color:var(--good); font-weight:700}
+.row.done.bad .a s{color:var(--bad)}
+.row.done.bad .fix{color:var(--ink); font-weight:700; margin-left:.4em}
+.row.cur{font-size:clamp(2.8rem, 12vw, 4.6rem); font-weight:700; margin:.35rem 0}
+.box{display:inline-block; min-width:2.1ch; border-bottom:.07em solid var(--rod); position:relative}
+.box::after{
+  content:""; display:inline-block; width:.06em; height:.8em; background:var(--ink);
+  margin-left:.04em; vertical-align:-.05em; animation:blink 1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.row.next{font-size:1.35rem; color:var(--muted)}
+.row.next + .row.next{opacity:.5}
+.row.fresh.good{animation:popg .35s ease-out}
+.row.fresh.bad{animation:shake .35s ease-out}
+@keyframes popg{from{transform:translateY(.5rem); opacity:.2}to{transform:none; opacity:1}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.over{text-align:center}
+.over h2{margin:0; font-size:1.1rem; color:var(--muted); font-weight:500}
+.final{font-size:3.2rem; font-weight:700; margin:.2rem 0 0; line-height:1.1}
+.final small{display:block; font-size:1rem; font-weight:400; color:var(--muted)}
+#bestLine{margin:.6rem 0 0; font-size:1rem}
+#bestLine.new{color:var(--good); font-weight:700}
+.misses{margin:1.25rem auto 0; max-width:24rem; text-align:left}
+.misses h3{font-size:1rem; margin:0 0 .4rem; font-weight:500}
+.misses ul{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:.4rem}
+.misses li{border:1.5px solid var(--line); border-radius:8px; padding:.2rem .55rem; background:var(--field)}
+.misses li .n{color:var(--bad); font-size:.85em; margin-left:.3em}
+.clean{margin:1rem 0 0; color:var(--good)}
+.over .actions{margin-top:1.4rem}
+.over .hint{margin:.6rem 0 0; color:var(--muted); font-size:.88rem}
+
+.pad{display:none; grid-template-columns:repeat(3,1fr); gap:.5rem; max-width:20rem; margin:0 auto}
+.pad button{
+  font:inherit; font-size:1.5rem; font-weight:500; padding:.6rem 0; border-radius:12px;
+  border:1.5px solid var(--line); background:var(--field); color:var(--ink); cursor:pointer;
+  touch-action:manipulation;
+}
+.pad button:active{background:var(--line)}
+@media (pointer:coarse){ .pad.on{display:grid} }
+
+footer{margin-top:1.5rem; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:.8rem}
+footer p{margin:.25rem 0}
+
+@media (prefers-reduced-motion: reduce){
+  .box::after{animation:none}
+  .row.fresh.good,.row.fresh.bad{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <svg viewBox="0 0 74 40" aria-hidden="true">
+      <g fill="var(--rod)">
+        <rect x="1" y="9" width="10" height="10" rx="2"/><rect x="13" y="9" width="10" height="10" rx="2"/><rect x="25" y="9" width="10" height="10" rx="2"/><rect x="37" y="9" width="10" height="10" rx="2"/><rect x="49" y="9" width="10" height="10" rx="2"/>
+        <rect x="1" y="21" width="10" height="10" rx="2"/><rect x="13" y="21" width="10" height="10" rx="2"/><rect x="25" y="21" width="10" height="10" rx="2"/><rect x="37" y="21" width="10" height="10" rx="2"/><rect x="49" y="21" width="10" height="10" rx="2"/>
+      </g>
+      <rect x="62" y="2" width="10" height="10" rx="2" fill="var(--unit)"/>
+    </svg>
+    <div>
+      <h1>SpeedCarry</h1>
+      <p class="sub">Facts that cross ten: sums like 8 + 7 and the subtractions that undo them, like 15 − 7.</p>
+    </div>
+  </header>
+
+  <div class="settings">
+    <div class="seg"><span class="seg-name" id="factsLbl">Facts</span>
+      <div class="seg-btns" role="group" aria-labelledby="factsLbl" data-setting="mode">
+        <button type="button" data-v="add" aria-pressed="true">Addition</button>
+        <button type="button" data-v="sub" aria-pressed="false">Subtraction</button>
+        <button type="button" data-v="both" aria-pressed="false">Both</button>
+      </div>
+    </div>
+    <div class="seg"><span class="seg-name" id="timeLbl">Time</span>
+      <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
+        <button type="button" data-v="30" aria-pressed="false">30 s</button>
+        <button type="button" data-v="60" aria-pressed="true">60 s</button>
+        <button type="button" data-v="120" aria-pressed="false">2 min</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="big" id="time">60</span><span class="lbl">seconds left</span></div>
+    <div class="stat right" aria-live="polite"><span class="big"><span id="right">0</span><span class="of">/<span id="tried">0</span></span></span><span class="lbl">correct</span></div>
+  </div>
+  <div class="timebar"><div id="timefill"></div></div>
+
+  <main class="stage">
+    <section class="ready" id="readyView">
+      <p>Press <span class="kbd">Space</span> or <span class="kbd">Enter</span> to start</p>
+      <button type="button" class="primary" id="startBtn">Start</button>
+    </section>
+
+    <section id="playView" hidden>
+      <div class="board" id="board"></div>
+    </section>
+
+    <section class="over" id="overView" hidden>
+      <h2>Time’s up</h2>
+      <p class="final"><span id="fRight">0</span><small>correct out of <span id="fTried">0</span></small></p>
+      <p id="bestLine"></p>
+      <div class="misses" id="missWrap" hidden>
+        <h3>Facts to practice</h3>
+        <ul id="missList"></ul>
+      </div>
+      <p class="clean" id="cleanLine" hidden>No misses this round.</p>
+      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button></div>
+      <p class="hint">or press <span class="kbd">Space</span>. Press <span class="kbd">X</span> to reset.</p>
+    </section>
+  </main>
+
+  <div class="pad" id="pad" aria-label="Number pad">
+    <button type="button" data-d="1">1</button><button type="button" data-d="2">2</button><button type="button" data-d="3">3</button>
+    <button type="button" data-d="4">4</button><button type="button" data-d="5">5</button><button type="button" data-d="6">6</button>
+    <button type="button" data-d="7">7</button><button type="button" data-d="8">8</button><button type="button" data-d="9">9</button>
+    <button type="button" data-d="back" aria-label="Delete">⌫</button><button type="button" data-d="0">0</button><button type="button" data-d="enter" aria-label="Check">✓</button>
+  </div>
+
+  <footer>
+    <p>Type your answer. It checks itself once you’ve typed enough digits, so there’s no need to press Enter. <span class="kbd">Backspace</span> fixes a digit. <span class="kbd">X</span> resets.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  // Build the fact pools: one-digit pairs whose sum is at least 10, and their inverse subtractions.
+  var FACTS = {add:[], sub:[]};
+  for (var a = 1; a <= 9; a++) for (var b = 1; b <= 9; b++) if (a + b >= 10) {
+    FACTS.add.push({q: a + " + " + b + " =", ans: a + b, key: a + "+" + b});
+    FACTS.sub.push({q: (a + b) + " − " + b + " =", ans: a, key: (a + b) + "-" + b});
+  }
+  var MODE_NAMES = {add:"Addition", sub:"Subtraction", both:"Both"};
+  var DUR_NAMES = {30:"30 seconds", 60:"60 seconds", 120:"2 minutes"};
+
+  var mode = "add", dur = 60, state = "ready";
+  var deck = [], queue = [], done = [], typed = "", correct = 0, attempted = 0;
+  var misses = new Map(), endAt = 0, raf = 0, overAt = 0;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var els = {
+    time:$("time"), right:$("right"), tried:$("tried"), fill:$("timefill"),
+    ready:$("readyView"), play:$("playView"), over:$("overView"), board:$("board"),
+    fRight:$("fRight"), fTried:$("fTried"), best:$("bestLine"),
+    missWrap:$("missWrap"), missList:$("missList"), clean:$("cleanLine"), pad:$("pad")
+  };
+
+  function shuffle(arr){
+    for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    return arr;
+  }
+  function pool(){ return mode === "both" ? FACTS.add.concat(FACTS.sub) : FACTS[mode]; }
+  function draw(){
+    if (!deck.length) {
+      deck = shuffle(pool().slice());
+      var last = queue.length ? queue[queue.length - 1] : null;
+      if (last && deck[deck.length - 1].key === last.key) { var t = deck[0]; deck[0] = deck[deck.length - 1]; deck[deck.length - 1] = t; }
+    }
+    return deck.pop();
+  }
+
+  function bestKey(){ return "speedcarry:best:" + mode + ":" + dur; }
+  function getBest(){ try { var v = localStorage.getItem(bestKey()); return v ? parseInt(v, 10) : null; } catch(e){ return null; } }
+  function setBest(n){ try { localStorage.setItem(bestKey(), String(n)); } catch(e){} }
+
+  function show(which){
+    els.ready.hidden = which !== "ready";
+    els.play.hidden = which !== "play";
+    els.over.hidden = which !== "over";
+    els.pad.classList.toggle("on", which === "play");
+    document.querySelectorAll(".seg-btns button").forEach(function(b){ b.disabled = which === "play"; });
+  }
+
+  function setTimeDisplay(ms){
+    els.time.textContent = Math.ceil(ms / 1000);
+    var frac = Math.max(0, ms / (dur * 1000));
+    els.fill.style.transform = "scaleX(" + frac + ")";
+    els.fill.classList.toggle("low", ms <= 10000 && state === "playing");
+  }
+  function updateScore(){ els.right.textContent = correct; els.tried.textContent = attempted; }
+
+  function reset(){
+    cancelAnimationFrame(raf);
+    state = "ready"; deck = []; queue = []; done = []; typed = "";
+    correct = 0; attempted = 0; misses = new Map();
+    updateScore(); setTimeDisplay(dur * 1000); show("ready");
+  }
+
+  function start(){
+    reset();
+    for (var i = 0; i < 3; i++) queue.push(draw());
+    state = "playing";
+    endAt = performance.now() + dur * 1000;
+    show("play"); render(false);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    var left = endAt - now;
+    if (left <= 0) { setTimeDisplay(0); finish(); return; }
+    setTimeDisplay(left);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+
+  function render(fresh){
+    var html = "";
+    var shown = done.slice(-2);
+    shown.forEach(function(d, i){
+      var isFresh = fresh && i === shown.length - 1;
+      var cls = "row done " + (d.ok ? "good" : "bad") + (isFresh ? " fresh" : "");
+      var a = d.ok ? esc(d.given) : "<s>" + esc(d.given) + "</s><span class=\"fix\">" + d.ans + "</span>";
+      html += "<div class=\"" + cls + "\"><span class=\"q\">" + d.q + "</span><span class=\"a\">" + a + "</span></div>";
+    });
+    for (var k = shown.length; k < 2; k++) html += "<div class=\"row done\" aria-hidden=\"true\"><span class=\"q\">&nbsp;</span><span class=\"a\"></span></div>";
+    var cur = queue[0];
+    html += "<div class=\"row cur\"><span class=\"q\">" + cur.q + "</span><span class=\"a\"><span class=\"box\">" + esc(typed) + "</span></span></div>";
+    html += "<div class=\"row next\"><span class=\"q\">" + queue[1].q + "</span><span class=\"a\"></span></div>";
+    html += "<div class=\"row next\"><span class=\"q\">" + queue[2].q + "</span><span class=\"a\"></span></div>";
+    els.board.innerHTML = html;
+  }
+
+  function submit(){
+    if (state !== "playing" || !typed) return;
+    var cur = queue[0];
+    var ok = parseInt(typed, 10) === cur.ans;
+    attempted++;
+    if (ok) correct++;
+    else {
+      var m = misses.get(cur.key) || {q: cur.q, ans: cur.ans, n: 0};
+      m.n++; misses.set(cur.key, m);
+    }
+    done.push({q: cur.q, ans: cur.ans, given: typed, ok: ok});
+    if (done.length > 4) done.shift();
+    queue.shift(); queue.push(draw());
+    typed = "";
+    updateScore(); render(true);
+  }
+
+  function digit(d){
+    if (state !== "playing") return;
+    if (typed.length >= 2) return;
+    typed += d;
+    if (typed.length >= String(queue[0].ans).length) submit();
+    else render(false);
+  }
+  function back(){
+    if (state !== "playing" || !typed) return;
+    typed = typed.slice(0, -1); render(false);
+  }
+
+  function finish(){
+    state = "over"; overAt = performance.now();
+    cancelAnimationFrame(raf);
+    els.fRight.textContent = correct;
+    els.fTried.textContent = attempted;
+    var prev = getBest();
+    var label = MODE_NAMES[mode] + ", " + DUR_NAMES[dur];
+    if (correct > 0 && (prev === null || correct > prev)) {
+      setBest(correct);
+      els.best.textContent = "New best for " + label + "!";
+      els.best.className = "new";
+    } else {
+      els.best.textContent = prev === null ? "" : "Best for " + label + ": " + prev;
+      els.best.className = "";
+    }
+    var list = Array.from(misses.values()).sort(function(x, y){ return y.n - x.n; });
+    els.missList.innerHTML = list.map(function(m){
+      return "<li>" + m.q + " " + m.ans + (m.n > 1 ? "<span class=\"n\">×" + m.n + "</span>" : "") + "</li>";
+    }).join("");
+    els.missWrap.hidden = list.length === 0;
+    els.clean.hidden = !(list.length === 0 && attempted > 0);
+    show("over");
+  }
+
+  // Settings
+  document.querySelectorAll(".seg-btns").forEach(function(group){
+    group.addEventListener("click", function(e){
+      var btn = e.target.closest("button"); if (!btn || btn.disabled) return;
+      var setting = group.getAttribute("data-setting");
+      var v = btn.getAttribute("data-v");
+      if (setting === "mode") mode = v; else dur = parseInt(v, 10);
+      group.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+      btn.blur();
+      reset();
+    });
+  });
+
+  $("startBtn").addEventListener("click", function(e){ e.currentTarget.blur(); start(); });
+  $("againBtn").addEventListener("click", function(e){ e.currentTarget.blur(); start(); });
+
+  els.pad.addEventListener("pointerdown", function(e){
+    var btn = e.target.closest("button"); if (!btn) return;
+    e.preventDefault();
+    var d = btn.getAttribute("data-d");
+    if (d === "back") back(); else if (d === "enter") submit(); else digit(d);
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (state === "playing") {
+      if (/^[0-9]$/.test(k)) { e.preventDefault(); digit(k); }
+      else if (k === "Backspace") { e.preventDefault(); back(); }
+      else if (k === "Enter") { e.preventDefault(); submit(); }
+      else if (k === "x" || k === "X" || k === "Escape") { e.preventDefault(); reset(); }
+      else if (k === " ") { e.preventDefault(); }
+      return;
+    }
+    if (k === " " || k === "Enter") {
+      e.preventDefault();
+      if (state === "over" && performance.now() - overAt < 800) return;
+      start();
+    } else if (k === "x" || k === "X" || k === "Escape") {
+      e.preventDefault(); reset();
+    }
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>
