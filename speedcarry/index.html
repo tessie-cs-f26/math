@@ -185,7 +185,7 @@ footer p{margin:.25rem 0}
 
   <div class="stats">
     <div class="stat"><span class="big" id="time">60</span><span class="lbl" id="tlbl">seconds left</span></div>
-    <div class="stat right" aria-live="polite"><span class="big"><span id="right">0</span><span class="of">/<span id="tried">0</span></span></span><span class="lbl">correct</span></div>
+    <div class="stat right" aria-live="polite"><span class="big" id="right">0</span><span class="lbl" id="tried">points</span></div>
   </div>
   <div class="timebar"><div id="timefill"></div></div>
 
@@ -202,7 +202,7 @@ footer p{margin:.25rem 0}
 
     <section class="over" id="overView" hidden>
       <h2 id="overTitle">Time’s up</h2>
-      <p class="final"><span id="fRight">0</span><small>correct out of <span id="fTried">0</span></small></p>
+      <p class="final"><span id="fRight">0</span><small>points · <span id="fTried"></span></small></p>
       <p id="bestLine"></p>
       <div class="lb" id="lbOver"></div>
       <div class="misses" id="missWrap" hidden>
@@ -266,8 +266,11 @@ footer p{margin:.25rem 0}
   }
 
   var QN = 10, startedAt = 0;
-  function lbKey(){ return "speedcarry:top10:" + mode + ":" + dur; }
+  function lbKey(){ return "speedcarry:score:" + mode + ":" + dur; }
   function lbLabel(){ return MODE_NAMES[mode] + ", " + DUR_NAMES[dur]; }
+  function score(){ return 2 * correct - attempted; }
+  function fmtScore(n){ return n < 0 ? "−" + (-n) : String(n); }
+  function tally(){ return correct + " right · " + (attempted - correct) + " wrong"; }
   function lbEsc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
   function lbGet(){ try { var a = JSON.parse(localStorage.getItem(lbKey()) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
   function lbSet(a){ try { localStorage.setItem(lbKey(), JSON.stringify(a)); return true; } catch(e){ return false; } }
@@ -288,7 +291,7 @@ footer p{margin:.25rem 0}
     if (!l.length) h += "<p class=\"lb-note\">No scores yet. Play a round to set one.</p>";
     else {
       h += "<ol>" + l.map(function(r, i){
-        return "<li" + (i === hi ? " class=\"me\"" : "") + "><span class=\"lb-n\">" + lbDate(r.t) + "</span><span class=\"lb-s\">" + r.s + "<small>/" + r.a + "</small></span></li>";
+        return "<li" + (i === hi ? " class=\"me\"" : "") + "><span class=\"lb-n\">" + lbDate(r.t) + "</span><span class=\"lb-s\">" + r.s + "<small> pts</small></span></li>";
       }).join("") + "</ol>" + "<button type=\"button\" class=\"lb-clear\">Clear my scores</button>";
     }
     box.innerHTML = h;
@@ -310,8 +313,8 @@ footer p{margin:.25rem 0}
       return;
     }
     title.textContent = "Time’s up";
-    if (lbQualifies(correct, attempted)){
-      var entry = {s: correct, a: attempted, t: Date.now()};
+    if (lbQualifies(score(), attempted)){
+      var entry = {s: score(), a: attempted, t: Date.now()};
       var l = lbGet(); l.push(entry); l.sort(lbCmp); l = l.slice(0, 10);
       lbSet(l);
       var rank = l.indexOf(entry);
@@ -344,7 +347,7 @@ footer p{margin:.25rem 0}
     els.fill.style.transform = "scaleX(" + frac + ")";
     els.fill.classList.toggle("low", ms <= 10000 && state === "playing");
   }
-  function updateScore(){ els.right.textContent = correct; els.tried.textContent = attempted; if (!dur) setTimeDisplay(0); }
+  function updateScore(){ els.right.textContent = fmtScore(score()); els.tried.textContent = attempted ? "points · " + tally() : "points"; if (!dur) setTimeDisplay(0); }
 
   function reset(){
     cancelAnimationFrame(raf);
@@ -420,8 +423,8 @@ footer p{margin:.25rem 0}
   function finish(){
     state = "over"; overAt = performance.now();
     cancelAnimationFrame(raf);
-    els.fRight.textContent = correct;
-    els.fTried.textContent = attempted;
+    els.fRight.textContent = fmtScore(score());
+    els.fTried.textContent = tally();
     afterRound();
     var list = Array.from(misses.values()).sort(function(x, y){ return y.n - x.n; });
     els.missList.innerHTML = list.map(function(m){
