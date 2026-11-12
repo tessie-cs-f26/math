@@ -133,6 +133,25 @@ button:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
 footer{margin-top:1.5rem; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:.8rem}
 footer p{margin:.25rem 0}
 
+.lb{margin:1.5rem auto 0; max-width:22rem; text-align:left}
+.lb h3{font-size:.95rem; font-weight:500; color:var(--muted); margin:0 0 .45rem; text-align:center}
+.lb ol{margin:0; padding:0; list-style:none; counter-reset:r; border:1.5px solid var(--line); border-radius:12px; background:var(--field); overflow:hidden}
+.lb li{counter-increment:r; display:flex; gap:.6rem; align-items:baseline; padding:.35rem .8rem; border-top:1px solid var(--line)}
+.lb li:first-child{border-top:0}
+.lb li::before{content:counter(r); width:1.4rem; color:var(--muted); font-size:.85rem}
+.lb .lb-n{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.lb .lb-s{font-weight:700}
+.lb .lb-s small{font-weight:400; color:var(--muted)}
+.lb li.me{background:color-mix(in srgb, var(--rod) 18%, transparent); font-weight:700}
+.lb-note{color:var(--muted); font-size:.9rem; text-align:center; margin:0}
+.lb-clear{display:block; margin:.5rem auto 0; font:inherit; font-size:.8rem; color:var(--muted); background:none; border:0; text-decoration:underline; cursor:pointer}
+.save{margin:.9rem auto 0; max-width:22rem; text-align:left}
+.save label{display:block; font-size:.9rem; color:var(--muted); margin-bottom:.3rem}
+.save-row{display:flex; gap:.5rem}
+.save input{flex:1; min-width:0; font:inherit; font-size:1rem; padding:.55rem .9rem; border:1.5px solid var(--line); border-radius:999px; background:var(--field); color:var(--ink)}
+.save input:focus-visible{outline:3px solid var(--unit); outline-offset:1px}
+.primary.small{font-size:.95rem; padding:.55rem 1.1rem}
+
 @media (prefers-reduced-motion: reduce){
   .box::after{animation:none}
   .row.fresh.good,.row.fresh.bad{animation:none}
@@ -174,16 +193,16 @@ footer p{margin:.25rem 0}
         <button type="button" data-v="all" aria-pressed="true">All</button>
       </div>
     </div>
-    <div class="seg"><span class="seg-name" id="timeLbl">Time</span>
+    <div class="seg"><span class="seg-name" id="timeLbl">Format</span>
       <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
         <button type="button" data-v="120" aria-pressed="true">2 min</button>
-        <button type="button" data-v="300" aria-pressed="false">5 min</button>
+        <button type="button" data-v="0" aria-pressed="false">10 questions</button>
       </div>
     </div>
   </div>
 
   <div class="stats">
-    <div class="stat"><span class="big" id="time">2:00</span><span class="lbl">time left</span></div>
+    <div class="stat"><span class="big" id="time">2:00</span><span class="lbl" id="tlbl">time left</span></div>
     <div class="stat right" aria-live="polite"><span class="big"><span id="right">0</span><span class="of">/<span id="tried">0</span></span></span><span class="lbl">correct</span></div>
   </div>
   <div class="timebar"><div id="timefill"></div></div>
@@ -192,6 +211,7 @@ footer p{margin:.25rem 0}
     <section class="ready" id="readyView">
       <p>Press <span class="kbd">Space</span> or <span class="kbd">Enter</span> to start</p>
       <button type="button" class="primary" id="startBtn">Start</button>
+      <div class="lb" id="lbReady"></div>
     </section>
 
     <section id="playView" hidden>
@@ -199,9 +219,10 @@ footer p{margin:.25rem 0}
     </section>
 
     <section class="over" id="overView" hidden>
-      <h2>Time’s up</h2>
+      <h2 id="overTitle">Time’s up</h2>
       <p class="final"><span id="fRight">0</span><small>correct out of <span id="fTried">0</span></small></p>
       <p id="bestLine"></p>
+      <div class="lb" id="lbOver"></div>
       <div class="misses" id="missWrap" hidden>
         <h3>Problems to review</h3>
         <ul id="missList"></ul>
@@ -366,7 +387,7 @@ var SigGen = (function(){
 /*ENDGEN*/
 
 (function(){
-  var DUR_NAMES = {120:"2 minutes", 300:"5 minutes"};
+  var DUR_NAMES = {120:"2 minutes", 0:"10 questions"};
   var OPS_NAMES = {addsub:"+ −", muldiv:"× ÷", all:"All"};
 
   var ops = "all", dur = 120, state = "ready";
@@ -378,6 +399,7 @@ var SigGen = (function(){
     time:$("time"), right:$("right"), tried:$("tried"), fill:$("timefill"),
     ready:$("readyView"), play:$("playView"), over:$("overView"), board:$("board"),
     fRight:$("fRight"), fTried:$("fTried"), best:$("bestLine"),
+    tlbl:$("tlbl"), lbReady:$("lbReady"), lbOver:$("lbOver"),
     missWrap:$("missWrap"), missList:$("missList"), clean:$("cleanLine"), pad:$("pad")
   };
 
@@ -387,9 +409,64 @@ var SigGen = (function(){
     return p;
   }
 
-  function bestKey(){ return "sigfigsprint:best:" + ops + ":" + dur; }
-  function getBest(){ try { var v = localStorage.getItem(bestKey()); return v ? parseInt(v, 10) : null; } catch(e){ return null; } }
-  function setBest(n){ try { localStorage.setItem(bestKey(), String(n)); } catch(e){} }
+  var QN = 10, startedAt = 0;
+  function lbKey(){ return "sigfigsprint:top10:" + ops + ":" + dur; }
+  function lbLabel(){ return OPS_NAMES[ops] + ", " + DUR_NAMES[dur]; }
+  function lbEsc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+  function lbGet(){ try { var a = JSON.parse(localStorage.getItem(lbKey()) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+  function lbSet(a){ try { localStorage.setItem(lbKey(), JSON.stringify(a)); return true; } catch(e){ return false; } }
+  function lbCmp(x, y){ return (y.s - x.s) || ((y.s / Math.max(1, y.a)) - (x.s / Math.max(1, x.a))) || (x.t - y.t); }
+  function lbQualifies(s, a){
+    if (s <= 0) return false;
+    var l = lbGet();
+    return l.length < 10 || lbCmp({s: s, a: a, t: Date.now()}, l[l.length - 1]) < 0;
+  }
+  function lbDate(t){ try { return new Date(t).toLocaleDateString(undefined, {month: "short", day: "numeric"}); } catch(e){ return ""; } }
+  function renderLB(box, hi){
+    if (!dur){
+      box.innerHTML = "<p class=\"lb-note\">Untimed: answer " + QN + " questions at your own pace. Best scores are kept for timed rounds.</p>";
+      return;
+    }
+    var l = lbGet();
+    var h = "<h3>Your best scores · " + lbEsc(lbLabel()) + "</h3>";
+    if (!l.length) h += "<p class=\"lb-note\">No scores yet. Play a round to set one.</p>";
+    else {
+      h += "<ol>" + l.map(function(r, i){
+        return "<li" + (i === hi ? " class=\"me\"" : "") + "><span class=\"lb-n\">" + lbDate(r.t) + "</span><span class=\"lb-s\">" + r.s + "<small>/" + r.a + "</small></span></li>";
+      }).join("") + "</ol>" + "<button type=\"button\" class=\"lb-clear\">Clear my scores</button>";
+    }
+    box.innerHTML = h;
+    var c = box.querySelector(".lb-clear");
+    if (c) c.addEventListener("click", function(){
+      if (c.getAttribute("data-armed")){ lbSet([]); renderLB(els.lbReady, -1); renderLB(els.lbOver, -1); }
+      else { c.setAttribute("data-armed", "1"); c.textContent = "Click again to clear"; }
+    });
+  }
+  function afterRound(){
+    var title = document.getElementById("overTitle");
+    els.best.className = "";
+    els.best.textContent = "";
+    if (!dur){
+      title.textContent = "Done!";
+      var secs = Math.round((performance.now() - startedAt) / 1000);
+      els.best.textContent = "Finished in " + Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + ".";
+      renderLB(els.lbOver, -1);
+      return;
+    }
+    title.textContent = "Time’s up";
+    if (lbQualifies(correct, attempted)){
+      var entry = {s: correct, a: attempted, t: Date.now()};
+      var l = lbGet(); l.push(entry); l.sort(lbCmp); l = l.slice(0, 10);
+      lbSet(l);
+      var rank = l.indexOf(entry);
+      els.best.textContent = rank === 0 ? "New personal best!" : "That’s #" + (rank + 1) + " on your list.";
+      els.best.className = "new";
+      renderLB(els.lbOver, rank);
+      return;
+    }
+    renderLB(els.lbOver, -1);
+  }
+  window.addEventListener("hashchange", function(){ if (state !== "playing") renderLB(els.lbReady, -1); });
 
   function show(which){
     els.ready.hidden = which !== "ready";
@@ -400,27 +477,33 @@ var SigGen = (function(){
   }
 
   function setTimeDisplay(ms){
+    if (!dur){
+      els.time.textContent = attempted + "/" + QN; els.tlbl.textContent = "answered";
+      els.fill.style.transform = "scaleX(" + Math.min(1, attempted / QN) + ")"; els.fill.classList.remove("low");
+      return;
+    }
+    els.tlbl.textContent = "time left";
     var s = Math.ceil(ms / 1000);
     els.time.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
     els.fill.style.transform = "scaleX(" + Math.max(0, ms / (dur * 1000)) + ")";
     els.fill.classList.toggle("low", ms <= 15000 && state === "playing");
   }
-  function updateScore(){ els.right.textContent = correct; els.tried.textContent = attempted; }
+  function updateScore(){ els.right.textContent = correct; els.tried.textContent = attempted; if (!dur) setTimeDisplay(0); }
 
   function reset(){
     cancelAnimationFrame(raf);
     state = "ready"; queue = []; done = []; typed = "";
     correct = 0; attempted = 0; misses = new Map();
-    updateScore(); setTimeDisplay(dur * 1000); show("ready");
+    updateScore(); setTimeDisplay(dur * 1000); show("ready"); renderLB(els.lbReady, -1);
   }
 
   function start(){
     reset();
     for (var i = 0; i < 3; i++) queue.push(draw());
     state = "playing";
-    endAt = performance.now() + dur * 1000;
+    startedAt = performance.now(); endAt = startedAt + dur * 1000;
     show("play"); render(false);
-    raf = requestAnimationFrame(tick);
+    if (dur) raf = requestAnimationFrame(tick);
   }
 
   function tick(now){
@@ -467,6 +550,7 @@ var SigGen = (function(){
     queue.shift(); queue.push(draw());
     typed = "";
     updateScore(); render(true);
+    if (!dur && attempted >= QN) finish();
   }
 
   function input(ch){
@@ -485,16 +569,7 @@ var SigGen = (function(){
     cancelAnimationFrame(raf);
     els.fRight.textContent = correct;
     els.fTried.textContent = attempted;
-    var prev = getBest();
-    var label = OPS_NAMES[ops] + ", " + DUR_NAMES[dur];
-    if (correct > 0 && (prev === null || correct > prev)) {
-      setBest(correct);
-      els.best.textContent = "New best for " + label + "!";
-      els.best.className = "new";
-    } else {
-      els.best.textContent = prev === null ? "" : "Best for " + label + ": " + prev;
-      els.best.className = "";
-    }
+    afterRound();
     var list = Array.from(misses.values()).slice(0, 12);
     els.missList.innerHTML = list.map(function(m){
       var p = m.p;
