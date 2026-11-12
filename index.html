@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Practice Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfbf7; --ink:#1d2a5c; --muted:#6b7394; --line:#d9dcea; --field:#ffffff;
+  --unit:#e9b414; --rod:#3a6fd0;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+    --unit:#f2c230; --rod:#6f9ef0; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+  --unit:#f2c230; --rod:#6f9ef0; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%}
+body{
+  margin:0; min-height:100%; background:var(--paper); color:var(--ink);
+  font-family:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height:1.45;
+}
+.app{max-width:40rem; margin:0 auto; padding:2rem 1.25rem 3rem}
+h1{margin:0; font-size:2.2rem; letter-spacing:-.02em; line-height:1.1}
+.sub{margin:.5rem 0 1.75rem; color:var(--muted)}
+.games{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.9rem}
+.game{
+  display:flex; gap:1rem; align-items:center; text-decoration:none; color:inherit;
+  background:var(--field); border:2px solid var(--line); border-radius:16px; padding:1rem 1.1rem;
+}
+.game:hover{border-color:var(--rod)}
+.game:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
+.icon{
+  flex:none; width:3.6rem; height:3.6rem; border-radius:12px; background:var(--rod); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.25rem;
+}
+.icon sup{font-size:.6em; color:var(--unit)}
+.game h2{margin:0; font-size:1.25rem}
+.game p{margin:.2rem 0 0; color:var(--muted); font-size:.92rem}
+.arrow{margin-left:auto; color:var(--rod); font-size:1.4rem; flex:none}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>Math Practice Games</h1>
+  <p class="sub">Pick a game. Each round is timed, so see how many you can get right.</p>
+  <ul class="games">
+    <li><a class="game" href="speedcarry/">
+      <span class="icon" aria-hidden="true">8+7</span>
+      <span><h2>SpeedCarry</h2><p>Addition and subtraction facts that cross ten, like 8 + 7 and 15 − 7.</p></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a></li>
+    <li><a class="game" href="sigfig-sprint/">
+      <span class="icon" aria-hidden="true">2.0</span>
+      <span><h2>SigFig Sprint</h2><p>Add, subtract, multiply, and divide measurements, then round to the right significant figures.</p></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a></li>
+    <li><a class="game" href="exponent-sprint/">
+      <span class="icon" aria-hidden="true">x<sup>m/n</sup></span>
+      <span><h2>Exponent Sprint</h2><p>Evaluate and simplify fractional exponents. Multiple choice, with numbers and variables.</p></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a></li>
+  </ul>
+</main>
+</body>
+</html>
