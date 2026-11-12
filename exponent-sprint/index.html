@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Exponent Sprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfbf7; --ink:#1d2a5c; --muted:#6b7394; --line:#d9dcea; --field:#ffffff;
+  --unit:#e9b414; --rod:#3a6fd0; --good:#1f8456; --bad:#c9403a;
+  --goodbg:#e3f4ea; --badbg:#fbe7e5;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+    --unit:#f2c230; --rod:#6f9ef0; --good:#4cc48b; --bad:#ff7a73;
+    --goodbg:#163a2e; --badbg:#47202a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+  --unit:#f2c230; --rod:#6f9ef0; --good:#4cc48b; --bad:#ff7a73;
+  --goodbg:#163a2e; --badbg:#47202a;
+  color-scheme:dark;
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; min-height:100%;
+  background:var(--paper); color:var(--ink);
+  font-family:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric:tabular-nums;
+  line-height:1.45;
+}
+.app{max-width:40rem; margin:0 auto; padding:1.25rem 1.25rem 2rem}
+header{display:flex; align-items:center; gap:.85rem}
+.logo{flex:none; width:3.6rem; height:3.6rem; border-radius:12px; background:var(--rod); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.6rem}
+.logo sup{font-size:.55em; color:var(--unit); margin-left:.05em}
+h1{margin:0; font-size:2rem; font-weight:700; letter-spacing:-.02em; line-height:1.1}
+.sub{margin:.35rem 0 0; color:var(--muted); font-size:.95rem; max-width:34rem}
+
+details.rules{margin:.9rem 0 0; font-size:.92rem}
+details.rules summary{cursor:pointer; color:var(--rod); font-weight:500}
+details.rules ul{margin:.4rem 0 0; padding-left:1.2rem}
+details.rules li{margin:.25rem 0}
+
+.settings{display:flex; flex-wrap:wrap; gap:.75rem 1.5rem; margin:1.1rem 0 1rem}
+.seg{display:flex; align-items:center; gap:.5rem}
+.seg-name{font-size:.85rem; color:var(--muted)}
+.seg-btns{display:inline-flex; border:1.5px solid var(--line); border-radius:999px; padding:2px; background:var(--field)}
+.seg-btns button{
+  font:inherit; font-size:.88rem; color:var(--ink); background:transparent; border:0;
+  padding:.35rem .8rem; border-radius:999px; cursor:pointer;
+}
+.seg-btns button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+.seg-btns button:disabled{cursor:not-allowed; opacity:.55}
+button:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
+
+.stats{display:flex; justify-content:space-between; align-items:flex-end; margin-top:.5rem}
+.stat{display:flex; flex-direction:column}
+.stat.right{align-items:flex-end}
+.big{font-size:2.4rem; font-weight:700; line-height:1}
+.of{color:var(--muted); font-weight:500}
+.lbl{font-size:.8rem; color:var(--muted)}
+.timebar{height:6px; background:var(--line); border-radius:3px; margin:.6rem 0 0; overflow:hidden}
+#timefill{height:100%; width:100%; background:var(--rod); transform-origin:left center}
+#timefill.low{background:var(--bad)}
+
+.stage{min-height:22rem; display:flex; flex-direction:column; justify-content:center; padding:1.25rem 0}
+[hidden]{display:none !important}
+
+.ready{text-align:center}
+.ready p{font-size:1.3rem; margin:0 0 1rem}
+.kbd{display:inline-block; border:1.5px solid var(--line); border-bottom-width:3px; border-radius:6px; padding:0 .4em; font-size:.9em; background:var(--field)}
+.primary{
+  font:inherit; font-weight:700; font-size:1.1rem; color:var(--paper); background:var(--rod);
+  border:0; border-radius:999px; padding:.7rem 1.6rem; cursor:pointer;
+}
+
+/* math */
+.fr{display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; margin:0 .08em}
+.fr > span:first-child{border-bottom:.07em solid currentColor; padding:0 .12em .04em}
+.fr > span:last-child{padding:.04em .12em 0}
+.ex{font-size:.55em; vertical-align:super; margin-left:.04em; white-space:nowrap}
+.math{white-space:nowrap}
+.rad{display:inline-flex; align-items:flex-start; white-space:nowrap}
+.rad .idx{font-size:.42em; margin:.3em -.55em 0 0; font-weight:500}
+.rad .rs{font-weight:300; font-size:1.3em; line-height:1; margin-top:-.08em; margin-right:-.06em}
+.rad .rc{border-top:.075em solid currentColor; margin-top:.1em; padding:.06em .12em 0; line-height:1.1}
+.choice i, .prob i, .mq i, .row i{font-family:"Times New Roman", Georgia, serif; font-size:1.1em}
+.pl{font-size:1.6em; font-weight:400; line-height:1; vertical-align:-.12em}
+.ex.hi{vertical-align:1.25em}
+
+.board{display:flex; flex-direction:column; gap:.4rem; align-items:center; text-align:center}
+.row.done{font-size:1.05rem; color:var(--muted); min-height:1.9em; display:flex; gap:.4em; align-items:center; justify-content:center}
+.row.done .ok{color:var(--good); font-weight:700}
+.row.done .no{color:var(--bad); font-weight:700}
+.row.fresh{animation:popg .35s ease-out}
+@keyframes popg{from{transform:translateY(.4rem); opacity:.2}to{transform:none; opacity:1}}
+.prob{font-size:clamp(2.6rem, 11vw, 4rem); font-weight:700; margin:.4rem 0 .9rem}
+.prob .eq{color:var(--muted); font-weight:500; margin-left:.25em}
+
+.choices{display:grid; grid-template-columns:1fr 1fr; gap:.7rem; width:100%; max-width:30rem}
+.choice{
+  position:relative; font:inherit; font-size:1.7rem; font-weight:500; color:var(--ink);
+  background:var(--field); border:2px solid var(--line); border-radius:14px;
+  min-height:5.2rem; padding:.6rem .5rem; cursor:pointer; touch-action:manipulation;
+  display:flex; align-items:center; justify-content:center;
+}
+.choice:hover{border-color:var(--rod)}
+.choice .tag{position:absolute; top:.35rem; left:.55rem; font-size:.75rem; color:var(--muted); font-weight:500}
+.choice.right{border-color:var(--good); background:var(--goodbg)}
+.choice.wrong{border-color:var(--bad); background:var(--badbg); animation:shake .35s ease-out}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+.over{text-align:center}
+.over h2{margin:0; font-size:1.1rem; color:var(--muted); font-weight:500}
+.final{font-size:3.2rem; font-weight:700; margin:.2rem 0 0; line-height:1.1}
+.final small{display:block; font-size:1rem; font-weight:400; color:var(--muted)}
+#bestLine{margin:.6rem 0 0; font-size:1rem}
+#bestLine.new{color:var(--good); font-weight:700}
+.misses{margin:1.25rem auto 0; max-width:30rem; text-align:left}
+.misses h3{font-size:1rem; margin:0 0 .5rem; font-weight:500}
+.misses ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.5rem}
+.misses li{border:1.5px solid var(--line); border-radius:10px; padding:.5rem .75rem; background:var(--field)}
+.mq{font-size:1.25rem; font-weight:500}
+.mq b{color:var(--good)}
+.mw{font-size:.88rem; color:var(--muted); margin-top:.2rem}
+.clean{margin:1rem 0 0; color:var(--good)}
+.over .actions{margin-top:1.4rem}
+.over .hint{margin:.6rem 0 0; color:var(--muted); font-size:.88rem}
+
+footer{margin-top:1.5rem; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:.8rem}
+footer p{margin:.25rem 0}
+
+@media (prefers-reduced-motion: reduce){
+  .row.fresh,.choice.wrong{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo" aria-hidden="true">x<sup>m/n</sup></div>
+    <div>
+      <h1>Exponent Sprint</h1>
+      <p class="sub">Evaluate and simplify powers with fractional exponents. Pick the right answer from four choices.</p>
+    </div>
+  </header>
+
+  <details class="rules">
+    <summary>The rules</summary>
+    <ul>
+      <li>The denominator is the root and the numerator is the power: x<span class="ex">m/n</span> means take the n-th root of x, then raise it to the m-th power.</li>
+      <li>A negative exponent means reciprocal: x<span class="ex">−m/n</span> = 1 ÷ x<span class="ex">m/n</span>.</li>
+      <li>An odd root of a negative number is negative: the cube root of −8 is −2.</li>
+      <li>With the same base, multiply by adding exponents, divide by subtracting them, and raise a power to a power by multiplying them.</li>
+      <li>Variables stand for positive numbers. Answers are written with positive exponents only.</li>
+    </ul>
+  </details>
+
+  <div class="settings">
+    <div class="seg"><span class="seg-name" id="lvlLbl">Problems</span>
+      <div class="seg-btns" role="group" aria-labelledby="lvlLbl" data-setting="level">
+        <button type="button" data-v="basic" aria-pressed="false">Basic</button>
+        <button type="button" data-v="mixed" aria-pressed="false">Mixed</button>
+        <button type="button" data-v="variables" aria-pressed="false">Variables</button>
+        <button type="button" data-v="all" aria-pressed="true">All</button>
+      </div>
+    </div>
+    <div class="seg"><span class="seg-name" id="timeLbl">Time</span>
+      <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
+        <button type="button" data-v="120" aria-pressed="true">2 min</button>
+        <button type="button" data-v="300" aria-pressed="false">5 min</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="big" id="time">2:00</span><span class="lbl">time left</span></div>
+    <div class="stat right" aria-live="polite"><span class="big"><span id="right">0</span><span class="of">/<span id="tried">0</span></span></span><span class="lbl">correct</span></div>
+  </div>
+  <div class="timebar"><div id="timefill"></div></div>
+
+  <main class="stage">
+    <section class="ready" id="readyView">
+      <p>Press <span class="kbd">Space</span> or <span class="kbd">Enter</span> to start</p>
+      <button type="button" class="primary" id="startBtn">Start</button>
+    </section>
+
+    <section id="playView" hidden>
+      <div class="board">
+        <div id="history"></div>
+        <div class="prob" id="prob" aria-live="polite"></div>
+        <div class="choices" id="choices"></div>
+      </div>
+    </section>
+
+    <section class="over" id="overView" hidden>
+      <h2>Time’s up</h2>
+      <p class="final"><span id="fRight">0</span><small>correct out of <span id="fTried">0</span></small></p>
+      <p id="bestLine"></p>
+      <div class="misses" id="missWrap" hidden>
+        <h3>Problems to review</h3>
+        <ul id="missList"></ul>
+      </div>
+      <p class="clean" id="cleanLine" hidden>No misses this round.</p>
+      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button></div>
+      <p class="hint">or press <span class="kbd">Space</span>. Press <span class="kbd">X</span> to reset.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Click or tap a choice, or press <span class="kbd">1</span>–<span class="kbd">4</span> (or <span class="kbd">A</span>–<span class="kbd">D</span>). <span class="kbd">X</span> resets.</p>
+    <p><strong>Basic:</strong> whole-number bases and positive exponents. <strong>Mixed:</strong> adds negative exponents, fraction bases, and negative bases. <strong>Variables:</strong> simplify expressions like (8<i>x</i><span class="ex">6</span>)<span class="ex">2/3</span>, products, quotients, powers of powers, and radicals. <strong>All:</strong> Mixed and Variables together.</p>
+  </footer>
+</div>
+
+<script>
+/*GEN*/
+var ExpGen = (function(){
+  function ri(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
+  function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+  function gcd(a, b){ a = Math.abs(a); b = Math.abs(b); while (b){ var t = a % b; a = b; b = t; } return a; }
+  function R(n, d){
+    if (d === undefined) d = 1;
+    if (d < 0){ n = -n; d = -d; }
+    var g = gcd(n, d) || 1;
+    return { n: n / g, d: d / g };
+  }
+  function pow(r, k){ return R(Math.pow(r.n, k), Math.pow(r.d, k)); }
+  function recip(r){ return R(r.d, r.n); }
+  function neg(r){ return R(-r.n, r.d); }
+  function key(r){ return r.n + "/" + r.d; }
+  function same(a, b){ return a.n === b.n && a.d === b.d; }
+  function ok(r){ return r.d !== 0 && isFinite(r.n) && isFinite(r.d) && Math.abs(r.n) <= 1000 && r.d <= 1000 && r.n !== 0; }
+  function intRoot(x, k){ // exact integer k-th root of positive x, or null
+    var r = Math.round(Math.pow(x, 1 / k));
+    for (var c = Math.max(1, r - 1); c <= r + 1; c++) if (Math.pow(c, k) === x) return c;
+    return null;
+  }
+  var MAXROOT = {2: 10, 3: 5, 4: 3, 5: 2};
+  var ROOTNAME = {2: "square root", 3: "cube root", 4: "4th root", 5: "5th root"};
+
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  function make(level){
+    for (var t = 0; t < 10000; t++){
+      var mixed = level === "mixed";
+      var n = pick([2, 2, 2, 3, 3, 3, 4, 5]);
+      var m = ri(1, Math.min(n + 1, 3));
+      if (m === n || gcd(m, n) !== 1) continue;
+      var negExp = mixed && Math.random() < 0.4;
+      var fracBase = mixed && Math.random() < 0.25;
+      var negBase = mixed && !fracBase && n % 2 === 1 && Math.random() < 0.3;
+      var p, q = 1;
+      if (fracBase){ p = ri(1, 3); q = ri(2, 4); if (p === q || gcd(p, q) !== 1) continue; }
+      else p = ri(2, MAXROOT[n]);
+      var s = negBase ? -1 : 1;
+      var A = R(s * Math.pow(p, n), Math.pow(q, n));
+      if (Math.abs(A.n) > 125 || A.d > 125) continue;
+      var root = R(s * p, q);
+      var powed = pow(root, m);
+      if (Math.abs(powed.n) > 125 || powed.d > 125) continue;
+      var val = negExp ? recip(powed) : powed;
+
+      // Distractors from common mistakes
+      var cands = [];
+      function add(r){ if (r && ok(r)) cands.push(r); }
+      function adj(r){ return negExp ? recip(r) : r; }
+      add(recip(val));                                   // ignored or misapplied the negative sign
+      if (negExp) add(neg(powed));                       // treated negative exponent as a negative answer
+      if (negExp) add(neg(val));
+      if (m > 1) add(adj(root));                         // took the root, forgot the power
+      if (m > 1 && Math.abs(Math.pow(A.n, m)) <= 1000 && Math.pow(A.d, m) <= 1000) add(adj(pow(A, m))); // took the power, forgot the root
+      add(R(A.n * m * (negExp ? -1 : 1), A.d * n));     // multiplied base by the exponent
+      if (m > 1){                                        // swapped root and power
+        var rn = intRoot(Math.abs(A.n), m), rd = intRoot(A.d, m);
+        if (rn !== null && rd !== null && (A.n > 0 || m % 2 === 1)){
+          add(adj(pow(R((A.n < 0 ? -1 : 1) * rn, rd), n)));
+        }
+      }
+      add(adj(pow(root, m + 1)));
+      if (m > 1) add(adj(pow(root, m - 1)));
+      if (negBase) add(neg(val));                        // sign error on negative base
+      add(adj(pow(root, m + 2)));
+      add(adj(R(powed.n * 2, powed.d)));
+
+      var seen = {}; seen[key(val)] = true;
+      var uniq = [];
+      cands.forEach(function(c){ if (!seen[key(c)]){ seen[key(c)] = true; uniq.push(c); } });
+      // Keep the first few (most instructive) more often, then shuffle in
+      var primary = shuffle(uniq.slice(0, 5)), rest = shuffle(uniq.slice(5));
+      var pool = primary.concat(rest);
+      if (pool.length < 3) continue;
+      var opts = shuffle([val].concat(pool.slice(0, 3)));
+
+      var steps = "The " + ROOTNAME[n] + " of " + txt(A) + " is " + txt(root);
+      if (m > 1) steps += ", and " + par(root) + "<sup>" + m + "</sup> = " + txt(powed);
+      steps += ".";
+      if (negExp) steps += " The negative exponent means reciprocal, so the answer is " + txt(val) + ".";
+
+      return { A: A, m: m, n: n, negExp: negExp, val: val, opts: opts, answer: opts.findIndex(function(o){ return same(o, val); }), steps: steps, id: key(A) + "^" + (negExp ? "-" : "") + m + "/" + n };
+    }
+    return null;
+  }
+
+  // Plain-text forms for explanations
+  function txt(r){ var sg = r.n < 0 ? "−" : ""; return sg + Math.abs(r.n) + (r.d === 1 ? "" : "/" + r.d); }
+  function par(r){ return (r.d !== 1 || r.n < 0) ? "(" + txt(r) + ")" : txt(r); }
+
+  return { make: make, R: R, same: same };
+})();
+/*ENDGEN*/
+
+/*VARGEN*/
+var VarGen = (function(){
+  function ri(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
+  function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+  function gcd(a, b){ a = Math.abs(a); b = Math.abs(b); while (b){ var t = a % b; a = b; b = t; } return a; }
+  function R(n, d){
+    if (d === undefined) d = 1;
+    if (d < 0){ n = -n; d = -d; }
+    var g = gcd(n, d) || 1;
+    return { n: n / g, d: d / g };
+  }
+  function add(a, b){ return R(a.n * b.d + b.n * a.d, a.d * b.d); }
+  function sub(a, b){ return R(a.n * b.d - b.n * a.d, a.d * b.d); }
+  function mul(a, b){ return R(a.n * b.n, a.d * b.d); }
+  function div(a, b){ return R(a.n * b.d, a.d * b.n); }
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  function eStr(e){ var s = e.n < 0 ? "−" : ""; return s + Math.abs(e.n) + (e.d === 1 ? "" : "/" + e.d); }
+  function sup(s){ return "<span class=\"ex\">" + s + "</span>"; }
+  function vpow(v, e){ return "<i>" + v + "</i>" + (e.n === 1 && e.d === 1 ? "" : sup(eStr(e))); }
+  // Monomial with rational coefficient and rational exponents, written with positive exponents only
+  function mono(c, vars){
+    var neg = c.n < 0, cn = Math.abs(c.n), cd = c.d, numV = "", denV = "";
+    vars.forEach(function(ve){
+      var e = ve[1];
+      if (e.n > 0) numV += vpow(ve[0], e);
+      else if (e.n < 0) denV += vpow(ve[0], R(-e.n, e.d));
+    });
+    var num = (cn !== 1 || !numV ? String(cn) : "") + numV;
+    var den = (cd !== 1 ? String(cd) : "") + denV;
+    if (!den) return (neg ? "−" : "") + num;
+    return (neg ? "−" : "") + "<span class=\"fr\"><span>" + num + "</span><span>" + den + "</span></span>";
+  }
+  function okR(r){ return r.d !== 0 && isFinite(r.n) && Math.abs(r.n) <= 9999 && r.d <= 9999; }
+
+  function finish(probH, ansH, cands, steps){
+    var seen = {}; seen[ansH] = true;
+    var uniq = [];
+    cands.forEach(function(c){ if (c && !seen[c]){ seen[c] = true; uniq.push(c); } });
+    if (uniq.length < 3) return null;
+    var opts = shuffle([ansH].concat(shuffle(uniq).slice(0, 3)));
+    return { probH: probH, ansH: ansH, optH: opts, answer: opts.indexOf(ansH), steps: steps, id: probH };
+  }
+
+  // (c x^a y^b)^(±m/n)
+  function powMono(){
+    for (var t = 0; t < 5000; t++){
+      var n = pick([2, 2, 3, 3, 4]), m = ri(1, Math.min(n + 1, 3));
+      if (m === n || gcd(m, n) !== 1) continue;
+      var negE = Math.random() < 0.35;
+      var k = ri(1, {2: 5, 3: 3, 4: 2}[n]), c = Math.pow(k, n), km = Math.pow(k, m);
+      if (km > 64) continue;
+      var vs = Math.random() < 0.5 ? [pick(["x", "a", "y"])] : ["x", "y"];
+      if (k === 1 && vs.length === 1 && Math.random() < 0.6) continue; // usually include a coefficient or two variables
+      var fracRes = Math.random() < 0.2;
+      var ex = vs.map(function(){ return fracRes ? ri(1, 3 * n) : n * ri(1, 3); });
+      if (ex.some(function(a){ return a === 1; }) && !fracRes) continue;
+      var r = R(negE ? -m : m, n), rp = R(m, n);
+      var ansC = negE ? R(1, km) : R(km);
+      var ansV = vs.map(function(v, i){ return [v, mul(R(ex[i]), r)]; });
+      var posV = vs.map(function(v, i){ return [v, mul(R(ex[i]), rp)]; });
+      var inside = mono(R(c), vs.map(function(v, i){ return [v, R(ex[i])]; }));
+      var probH = "(" + inside + ")" + sup(eStr(r));
+      var ansH = mono(ansC, ansV);
+      var cands = [];
+      cands.push(mono(ansC, vs.map(function(v, i){ return [v, R(ex[i] * (negE ? -m : m))]; })));        // forgot the root on variables
+      if (k > 1) cands.push(mono(negE ? R(1, c) : R(c), ansV));                                       // coefficient left alone
+      if (k > 1) cands.push(mono(R(c * m * (negE ? -1 : 1), n), ansV));                               // coefficient multiplied by exponent
+      cands.push(mono(ansC, vs.map(function(v, i){ return [v, add(R(ex[i]), r)]; })));                // added exponents
+      cands.push(mono(ansC, vs.map(function(v, i){ return [v, R(ex[i] * n * (negE ? -1 : 1), m)]; }))); // flipped the fraction
+      if (negE){
+        cands.push(mono(R(km), posV));                                                                // ignored the negative
+        cands.push(mono(R(km), ansV));                                                                // only flipped the variables
+        cands.push(mono(R(-km), posV));                                                               // negative answer
+      }
+      cands = cands.filter(function(s){ return s.indexOf("NaN") < 0 && s.indexOf("Infinity") < 0; });
+      var steps = "Raise every factor to the " + eStr(rp) + " power" + (negE ? " first" : "") + ". ";
+      if (k > 1) steps += c + sup(eStr(rp)) + " = " + km + ". ";
+      steps += vs.map(function(v, i){ return "<i>" + v + "</i>: " + ex[i] + " × " + eStr(rp) + " = " + eStr(posV[i][1]); }).join(", ") + ".";
+      if (negE) steps += " The negative exponent means reciprocal, so it all goes in the denominator.";
+      var res = finish(probH, ansH, cands, steps);
+      if (res) return res;
+    }
+  }
+
+  function fracExp(maxD){
+    for (;;){ var b = ri(2, maxD), a = ri(1, Math.min(b + 1, 4)); if (gcd(a, b) === 1 && a !== b) return R(a, b); }
+  }
+
+  // c1 x^e1 · c2 x^e2
+  function product(){
+    for (var t = 0; t < 5000; t++){
+      var v = pick(["x", "x", "a", "y"]);
+      var e1 = fracExp(4), e2 = fracExp(4);
+      if (e1.d === e2.d && Math.random() < 0.6) continue;
+      var co = Math.random() < 0.35, c1 = co ? ri(2, 4) : 1, c2 = co ? ri(2, 4) : 1;
+      var s = add(e1, e2);
+      if (s.d > 6) continue;
+      var probH = mono(R(c1), [[v, e1]]) + " · " + mono(R(c2), [[v, e2]]);
+      var ansH = mono(R(c1 * c2), [[v, s]]);
+      var cands = [
+        mono(R(c1 * c2), [[v, mul(e1, e2)]]),
+        mono(R(c1 * c2), [[v, R(e1.n + e2.n, e1.d + e2.d)]]),
+        mono(R(c1 * c2), [[v, R(e1.n + e2.n, e1.d * e2.d)]]),
+        mono(R(c1 * c2), [[v, sub(e1, e2).n === 0 ? R(2) : (sub(e1, e2).n > 0 ? sub(e1, e2) : sub(e2, e1))]])
+      ];
+      if (co) cands.push(mono(R(c1 + c2), [[v, s]]));
+      var steps = "Same base, so add the exponents: " + eStr(e1) + " + " + eStr(e2) + " = " + eStr(s) + ".";
+      if (co) steps += " Multiply the coefficients: " + c1 + " × " + c2 + " = " + (c1 * c2) + ".";
+      var res = finish(probH, ansH, cands, steps);
+      if (res) return res;
+    }
+  }
+
+  // x^e1 / x^e2
+  function quotient(){
+    for (var t = 0; t < 5000; t++){
+      var v = pick(["x", "x", "a", "y"]);
+      var e1 = fracExp(4), e2 = fracExp(4);
+      var dff = sub(e1, e2);
+      if (dff.n === 0 || dff.d > 6) continue;
+      var probH = "<span class=\"fr\"><span>" + vpow(v, e1) + "</span><span>" + vpow(v, e2) + "</span></span>";
+      var ansH = mono(R(1), [[v, dff]]);
+      var cands = [
+        mono(R(1), [[v, div(e1, e2)]]),
+        mono(R(1), [[v, sub(e2, e1)]]),
+        mono(R(1), [[v, add(e1, e2)]]),
+        mono(R(1), [[v, mul(e1, e2)]])
+      ];
+      if (e1.d !== e2.d && e1.n !== e2.n) cands.push(mono(R(1), [[v, R(e1.n - e2.n, e1.d - e2.d)]]));
+      var steps = "Same base, so subtract the exponents: " + eStr(e1) + " − " + eStr(e2) + " = " + eStr(dff) + ".";
+      if (dff.n < 0) steps += " A negative exponent means reciprocal, so the answer goes in the denominator.";
+      var res = finish(probH, ansH, cands, steps);
+      if (res) return res;
+    }
+  }
+
+  // (x^e1)^e2
+  function powPow(){
+    for (var t = 0; t < 5000; t++){
+      var v = pick(["x", "x", "a", "y"]);
+      var e1 = fracExp(4), e2 = fracExp(4);
+      var p = mul(e1, e2);
+      if (p.d > 6) continue;
+      var probH = "(" + vpow(v, e1) + ")" + sup(eStr(e2));
+      var ansH = mono(R(1), [[v, p]]);
+      var cands = [
+        mono(R(1), [[v, add(e1, e2)]]),
+        mono(R(1), [[v, R(e1.n + e2.n, e1.d + e2.d)]]),
+        mono(R(1), [[v, div(e1, e2)]]),
+        mono(R(1), [[v, div(e2, e1)]]),
+        mono(R(1), [[v, R(e1.n * e2.n, e1.d + e2.d)]])
+      ];
+      var steps = "Power of a power, so multiply the exponents: " + eStr(e1) + " × " + eStr(e2) + " = " + eStr(p) + ".";
+      var res = finish(probH, ansH, cands, steps);
+      if (res) return res;
+    }
+  }
+
+  // n-th root of (c x^m)
+  function radical(){
+    for (var t = 0; t < 5000; t++){
+      var v = pick(["x", "x", "a", "y"]);
+      var n = pick([2, 3, 3, 4, 5]), m = ri(1, 6);
+      if (m === n) continue;
+      var co = Math.random() < 0.35, k = co ? ri(2, {2: 5, 3: 3, 4: 2, 5: 2}[n]) : 1, c = Math.pow(k, n);
+      var e = R(m, n);
+      var rad = "<span class=\"rad\">" + (n > 2 ? "<span class=\"idx\">" + n + "</span>" : "") +
+        "<span class=\"rs\">√</span><span class=\"rc\">" + mono(R(c), [[v, R(m)]]) + "</span></span>";
+      var ansH = mono(R(k), [[v, e]]);
+      var cands = [
+        mono(R(k), [[v, R(n, m)]]),
+        mono(R(k), [[v, R(m * n)]]),
+        mono(R(k), [[v, R(1, m * n)]]),
+        mono(R(k), [[v, m > n ? R(m - n) : R(m + n)]])
+      ];
+      if (co){ cands.push(mono(R(c), [[v, e]])); cands.push(mono(R(c, n), [[v, e]])); }
+      var steps = "The root’s index becomes the denominator of the exponent: " + vpow(v, R(m)) + " under a " +
+        (n === 2 ? "square" : n === 3 ? "cube" : n + "th") + " root is " + vpow(v, e) + ".";
+      if (co) steps += " The " + (n === 2 ? "square" : n === 3 ? "cube" : n + "th") + " root of " + c + " is " + k + ".";
+      var res = finish(rad, ansH, cands, steps);
+      if (res) return res;
+    }
+  }
+
+  function make(){
+    var r = Math.random();
+    if (r < 0.35) return powMono();
+    if (r < 0.5) return product();
+    if (r < 0.65) return quotient();
+    if (r < 0.8) return powPow();
+    return radical();
+  }
+  return { make: make, _all: {powMono: powMono, product: product, quotient: quotient, powPow: powPow, radical: radical} };
+})();
+/*ENDVARGEN*/
+
+
+(function(){
+  var DUR_NAMES = {120:"2 minutes", 300:"5 minutes"};
+  var LVL_NAMES = {basic:"Basic", mixed:"Mixed", variables:"Variables", all:"All"};
+
+  var level = "all", dur = 120, state = "ready";
+  var cur = null, done = [], correct = 0, attempted = 0, locked = false, lockTimer = 0;
+  var misses = new Map(), endAt = 0, raf = 0, overAt = 0, lastId = "";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var els = {
+    time:$("time"), right:$("right"), tried:$("tried"), fill:$("timefill"),
+    ready:$("readyView"), play:$("playView"), over:$("overView"),
+    history:$("history"), prob:$("prob"), choices:$("choices"),
+    fRight:$("fRight"), fTried:$("fTried"), best:$("bestLine"),
+    missWrap:$("missWrap"), missList:$("missList"), clean:$("cleanLine")
+  };
+
+  // HTML rendering
+  function frac(r){
+    var sg = r.n < 0 ? "−" : "";
+    if (r.d === 1) return sg + Math.abs(r.n);
+    return sg + "<span class=\"fr\"><span>" + Math.abs(r.n) + "</span><span>" + r.d + "</span></span>";
+  }
+  function baseHTML(A){
+    if (A.d !== 1) return "<span class=\"pl\">(</span>" + frac(A) + "<span class=\"pl\">)</span>";
+    if (A.n < 0) return "(" + frac(A) + ")";
+    return String(A.n);
+  }
+  function probHTML(p){
+    return "<span class=\"math\">" + baseHTML(p.A) + "<span class=\"ex" + (p.A.d !== 1 ? " hi" : "") + "\">" + (p.negExp ? "−" : "") + p.m + "/" + p.n + "</span></span>";
+  }
+
+  function newProblem(){
+    var p;
+    do {
+      var useVar = level === "variables" || (level === "all" && Math.random() < 0.5);
+      p = useVar ? VarGen.make() : ExpGen.make(level === "all" ? "mixed" : level);
+      if (p && !p.probH){ p.probH = probHTML(p); p.optH = p.opts.map(frac); p.ansH = frac(p.val); }
+    } while (!p || p.id === lastId);
+    lastId = p.id;
+    return p;
+  }
+
+  function bestKey(){ return "exponentsprint:best:" + level + ":" + dur; }
+  function getBest(){ try { var v = localStorage.getItem(bestKey()); return v ? parseInt(v, 10) : null; } catch(e){ return null; } }
+  function setBest(n){ try { localStorage.setItem(bestKey(), String(n)); } catch(e){} }
+
+  function show(which){
+    els.ready.hidden = which !== "ready";
+    els.play.hidden = which !== "play";
+    els.over.hidden = which !== "over";
+    document.querySelectorAll(".seg-btns button").forEach(function(b){ b.disabled = which === "play"; });
+  }
+
+  function setTimeDisplay(ms){
+    var s = Math.ceil(ms / 1000);
+    els.time.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    els.fill.style.transform = "scaleX(" + Math.max(0, ms / (dur * 1000)) + ")";
+    els.fill.classList.toggle("low", ms <= 15000 && state === "playing");
+  }
+  function updateScore(){ els.right.textContent = correct; els.tried.textContent = attempted; }
+
+  function reset(){
+    cancelAnimationFrame(raf); clearTimeout(lockTimer);
+    state = "ready"; cur = null; done = []; locked = false;
+    correct = 0; attempted = 0; misses = new Map();
+    updateScore(); setTimeDisplay(dur * 1000); show("ready");
+  }
+
+  function start(){
+    reset();
+    state = "playing";
+    cur = newProblem();
+    endAt = performance.now() + dur * 1000;
+    show("play"); render(false);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    var left = endAt - now;
+    if (left <= 0) { setTimeDisplay(0); finish(); return; }
+    setTimeDisplay(left);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function render(fresh){
+    var h = "";
+    if (done.length){
+      var d = done[done.length - 1];
+      h = "<div class=\"row done" + (fresh ? " fresh" : "") + "\"><span class=\"math\">" + d.p.probH + "</span> = " +
+        (d.ok ? "<span class=\"ok\"><span class=\"math\">" + d.p.ansH + "</span> ✓</span>"
+              : "<span class=\"no\">✗</span> <span class=\"math\">" + d.p.ansH + "</span>") + "</div>";
+    } else {
+      h = "<div class=\"row done\" aria-hidden=\"true\"></div>";
+    }
+    els.history.innerHTML = h;
+    els.prob.innerHTML = "<span class=\"math\">" + cur.probH + "</span><span class=\"eq\">=</span>";
+    els.choices.innerHTML = cur.optH.map(function(o, i){
+      return "<button type=\"button\" class=\"choice\" data-i=\"" + i + "\"><span class=\"tag\">" + "ABCD"[i] + "</span><span class=\"math\">" + o + "</span></button>";
+    }).join("");
+  }
+
+  function choose(i){
+    if (state !== "playing" || locked || i < 0 || i > 3) return;
+    locked = true;
+    var ok = i === cur.answer;
+    attempted++;
+    if (ok) correct++;
+    else {
+      var m = misses.get(cur.id) || {p: cur, n: 0};
+      m.n++; misses.set(cur.id, m);
+    }
+    updateScore();
+    var btns = els.choices.querySelectorAll(".choice");
+    btns[cur.answer].classList.add("right");
+    if (!ok) btns[i].classList.add("wrong");
+    lockTimer = setTimeout(function(){
+      if (state !== "playing") return;
+      done.push({p: cur, ok: ok});
+      if (done.length > 3) done.shift();
+      cur = newProblem();
+      locked = false;
+      render(true);
+    }, ok ? 300 : 1200);
+  }
+
+  function finish(){
+    state = "over"; overAt = performance.now();
+    cancelAnimationFrame(raf); clearTimeout(lockTimer); locked = false;
+    els.fRight.textContent = correct;
+    els.fTried.textContent = attempted;
+    var prev = getBest();
+    var label = LVL_NAMES[level] + ", " + DUR_NAMES[dur];
+    if (correct > 0 && (prev === null || correct > prev)) {
+      setBest(correct);
+      els.best.textContent = "New best for " + label + "!";
+      els.best.className = "new";
+    } else {
+      els.best.textContent = prev === null ? "" : "Best for " + label + ": " + prev;
+      els.best.className = "";
+    }
+    var list = Array.from(misses.values()).slice(0, 12);
+    els.missList.innerHTML = list.map(function(m){
+      return "<li><div class=\"mq\">" + m.p.probH + " = <b>" + m.p.ansH + "</b></div><div class=\"mw\">" + m.p.steps + "</div></li>";
+    }).join("");
+    els.missWrap.hidden = list.length === 0;
+    els.clean.hidden = !(list.length === 0 && attempted > 0);
+    show("over");
+  }
+
+  document.querySelectorAll(".seg-btns").forEach(function(group){
+    group.addEventListener("click", function(e){
+      var btn = e.target.closest("button"); if (!btn || btn.disabled) return;
+      var setting = group.getAttribute("data-setting");
+      var v = btn.getAttribute("data-v");
+      if (setting === "level") level = v; else dur = parseInt(v, 10);
+      group.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+      btn.blur();
+      reset();
+    });
+  });
+
+  $("startBtn").addEventListener("click", function(e){ e.currentTarget.blur(); start(); });
+  $("againBtn").addEventListener("click", function(e){ e.currentTarget.blur(); start(); });
+
+  els.choices.addEventListener("click", function(e){
+    var btn = e.target.closest(".choice"); if (!btn) return;
+    btn.blur();
+    choose(parseInt(btn.getAttribute("data-i"), 10));
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (state === "playing") {
+      var idx = "1234".indexOf(k);
+      if (idx < 0) idx = "abcd".indexOf(k.toLowerCase());
+      if (k.length === 1 && idx >= 0) { e.preventDefault(); choose(idx); }
+      else if (k === "x" || k === "X" || k === "Escape") { e.preventDefault(); reset(); }
+      else if (k === " " || k === "Enter") { e.preventDefault(); }
+      return;
+    }
+    if (k === " " || k === "Enter") {
+      e.preventDefault();
+      if (state === "over" && performance.now() - overAt < 800) return;
+      start();
+    } else if (k === "x" || k === "X" || k === "Escape") {
+      e.preventDefault(); reset();
+    }
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>
