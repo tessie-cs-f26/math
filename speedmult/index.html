@@ -174,9 +174,9 @@ footer p{margin:.25rem 0}
     </div>
     <div class="seg"><span class="seg-name" id="timeLbl">Format</span>
       <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
+        <button type="button" data-v="0" aria-pressed="true">Untimed</button>
         <button type="button" data-v="30" aria-pressed="false">30 s</button>
-        <button type="button" data-v="60" aria-pressed="true">60 s</button>
-        <button type="button" data-v="0" aria-pressed="false">10 questions</button>
+        <button type="button" data-v="60" aria-pressed="false">60 s</button>
       </div>
     </div>
   </div>
@@ -234,9 +234,9 @@ footer p{margin:.25rem 0}
     FACTS.div.push({q: (a * b) + " ÷ " + b + " =", ans: a, key: (a * b) + "/" + b});
   }
   var MODE_NAMES = {mul:"Multiplication", div:"Division", both:"Both"};
-  var DUR_NAMES = {30:"30 seconds", 60:"60 seconds", 0:"10 questions"};
+  var DUR_NAMES = {30:"30 seconds", 60:"60 seconds", 0:"Untimed"};
 
-  var mode = "both", dur = 60, state = "ready";
+  var mode = "both", dur = 0, state = "ready";
   var deck = [], queue = [], done = [], typed = "", correct = 0, attempted = 0;
   var misses = new Map(), endAt = 0, raf = 0, overAt = 0;
 
@@ -266,7 +266,7 @@ footer p{margin:.25rem 0}
   var QN = 10, startedAt = 0;
   function lbKey(){ return "speedmult:score:" + mode + ":" + dur; }
   function lbLabel(){ return MODE_NAMES[mode] + ", " + DUR_NAMES[dur]; }
-  function score(){ return 2 * correct - attempted; }
+  function score(){ return dur ? 2 * correct - attempted : correct; }
   function fmtScore(n){ return n < 0 ? "−" + (-n) : String(n); }
   function tally(){ return correct + " right · " + (attempted - correct) + " wrong"; }
   function lbEsc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
@@ -335,7 +335,7 @@ footer p{margin:.25rem 0}
 
   function setTimeDisplay(ms){
     if (!dur){
-      els.time.textContent = attempted + "/" + QN; els.tlbl.textContent = "answered";
+      els.time.textContent = Math.min(attempted + 1, QN) + "/" + QN; els.tlbl.textContent = "question";
       els.fill.style.transform = "scaleX(" + Math.min(1, attempted / QN) + ")"; els.fill.classList.remove("low");
       return;
     }

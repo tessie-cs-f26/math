@@ -197,8 +197,8 @@ footer p{margin:.25rem 0}
     </div>
     <div class="seg"><span class="seg-name" id="timeLbl">Format</span>
       <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
-        <button type="button" data-v="120" aria-pressed="true">2 min</button>
-        <button type="button" data-v="0" aria-pressed="false">10 questions</button>
+        <button type="button" data-v="0" aria-pressed="true">Untimed</button>
+        <button type="button" data-v="120" aria-pressed="false">2 min</button>
       </div>
     </div>
   </div>
@@ -541,10 +541,10 @@ var VarGen = (function(){
 
 
 (function(){
-  var DUR_NAMES = {120:"2 minutes", 0:"10 questions"};
+  var DUR_NAMES = {120:"2 minutes", 0:"Untimed"};
   var LVL_NAMES = {basic:"Basic", mixed:"Mixed", variables:"Variables", all:"All"};
 
-  var level = "all", dur = 120, state = "ready";
+  var level = "all", dur = 0, state = "ready";
   var cur = null, done = [], correct = 0, attempted = 0, locked = false, lockTimer = 0;
   var misses = new Map(), endAt = 0, raf = 0, overAt = 0, lastId = "";
 
@@ -587,7 +587,7 @@ var VarGen = (function(){
   var QN = 10, startedAt = 0;
   function lbKey(){ return "exponentsprint:score:" + level + ":" + dur; }
   function lbLabel(){ return LVL_NAMES[level] + ", " + DUR_NAMES[dur]; }
-  function score(){ return 2 * correct - attempted; }
+  function score(){ return dur ? 2 * correct - attempted : correct; }
   function fmtScore(n){ return n < 0 ? "−" + (-n) : String(n); }
   function tally(){ return correct + " right · " + (attempted - correct) + " wrong"; }
   function lbEsc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
@@ -655,7 +655,7 @@ var VarGen = (function(){
 
   function setTimeDisplay(ms){
     if (!dur){
-      els.time.textContent = attempted + "/" + QN; els.tlbl.textContent = "answered";
+      els.time.textContent = Math.min(attempted + 1, QN) + "/" + QN; els.tlbl.textContent = "question";
       els.fill.style.transform = "scaleX(" + Math.min(1, attempted / QN) + ")"; els.fill.classList.remove("low");
       return;
     }
