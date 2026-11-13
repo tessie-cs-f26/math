@@ -35,6 +35,8 @@ body{
 .app{max-width:40rem; margin:0 auto; padding:2rem 1.25rem 3rem}
 h1{margin:0; font-size:2.2rem; letter-spacing:-.02em; line-height:1.1}
 .sub{margin:.5rem 0 1.75rem; color:var(--muted)}
+.section{margin:2rem 0 .7rem; font-size:1rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.section:first-of-type{margin-top:0}
 .games{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.9rem}
 .game{
   display:flex; gap:1rem; align-items:center; text-decoration:none; color:inherit;
@@ -56,6 +58,7 @@ h1{margin:0; font-size:2.2rem; letter-spacing:-.02em; line-height:1.1}
 <main class="app">
   <h1>Math Practice Games</h1>
   <p class="sub">Pick a game. Answer 10 questions at your own pace, or play a timed round to beat your best score. In timed rounds, every right answer is +1 point and every miss is −1.</p>
+  <h2 class="section">Pre-algebra</h2>
   <ul class="games">
     <li><a class="game" href="speedcarry/">
       <span class="icon" aria-hidden="true">8+7</span>
@@ -67,6 +70,20 @@ h1{margin:0; font-size:2.2rem; letter-spacing:-.02em; line-height:1.1}
       <span><h2>SpeedMult</h2><p>Multiplication and division facts up to 10 × 10, like 7 × 8 and 56 ÷ 8.</p></span>
       <span class="arrow" aria-hidden="true">→</span>
     </a></li>
+    <li><a class="game" href="speed-integers/">
+      <span class="icon" aria-hidden="true">−3+5</span>
+      <span><h2>Speed Integers</h2><p>Add negative and positive numbers, like −7 + 12 and 15 + (−8).</p></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a></li>
+    <li><a class="game" href="speed-fractions/">
+      <span class="icon" aria-hidden="true">6/8</span>
+      <span><h2>Speed Fractions</h2><p>Simplify fractions to lowest terms, like 18/24 = 3/4.</p></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a></li>
+  </ul>
+
+  <h2 class="section">Algebra</h2>
+  <ul class="games">
     <li><a class="game" href="speed-sigfig/">
       <span class="icon" aria-hidden="true">0.40</span>
       <span><h2>Speed SigFig</h2><p>Count the significant figures in a number, from 1 to 6.</p></span>

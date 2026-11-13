@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Speed Fractions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfbf7; --ink:#1d2a5c; --muted:#6b7394; --line:#d9dcea; --field:#ffffff;
+  --unit:#e9b414; --rod:#3a6fd0; --good:#1f8456; --bad:#c9403a;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+    --unit:#f2c230; --rod:#6f9ef0; --good:#4cc48b; --bad:#ff7a73;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131933; --ink:#eef0fa; --muted:#9aa2c4; --line:#2c3560; --field:#1b2347;
+  --unit:#f2c230; --rod:#6f9ef0; --good:#4cc48b; --bad:#ff7a73;
+  color-scheme:dark;
+}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; min-height:100%;
+  background:var(--paper); color:var(--ink);
+  font-family:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric:tabular-nums;
+  line-height:1.45;
+}
+.app{max-width:40rem; margin:0 auto; padding:1.25rem 1.25rem 2rem}
+header{display:flex; align-items:center; gap:.85rem}
+header svg{flex:none; width:3.6rem; height:auto}
+h1{margin:0; font-size:2rem; font-weight:700; letter-spacing:-.02em; line-height:1.1}
+.sub{margin:.35rem 0 0; color:var(--muted); font-size:.95rem; max-width:34rem}
+
+.settings{display:flex; flex-wrap:wrap; gap:.75rem 1.5rem; margin:1.25rem 0 1rem}
+.seg{display:flex; align-items:center; gap:.5rem}
+.seg-name{font-size:.85rem; color:var(--muted)}
+.seg-btns{display:inline-flex; border:1.5px solid var(--line); border-radius:999px; padding:2px; background:var(--field)}
+.seg-btns button{
+  font:inherit; font-size:.88rem; color:var(--ink); background:transparent; border:0;
+  padding:.35rem .8rem; border-radius:999px; cursor:pointer;
+}
+.seg-btns button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+.seg-btns button:disabled{cursor:not-allowed; opacity:.55}
+button:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
+
+.stats{display:flex; justify-content:space-between; align-items:flex-end; margin-top:.5rem}
+.stat{display:flex; flex-direction:column}
+.stat.right{align-items:flex-end}
+.big{font-size:2.4rem; font-weight:700; line-height:1}
+.of{color:var(--muted); font-weight:500}
+.lbl{font-size:.8rem; color:var(--muted)}
+.timebar{height:6px; background:var(--line); border-radius:3px; margin:.6rem 0 0; overflow:hidden}
+#timefill{height:100%; width:100%; background:var(--rod); transform-origin:left center}
+#timefill.low{background:var(--bad)}
+
+.stage{min-height:21rem; display:flex; flex-direction:column; justify-content:center; padding:1.25rem 0}
+[hidden]{display:none !important}
+
+.ready{text-align:center}
+.ready p{font-size:1.3rem; margin:0 0 1rem}
+.kbd{display:inline-block; border:1.5px solid var(--line); border-bottom-width:3px; border-radius:6px; padding:0 .4em; font-size:.9em; background:var(--field)}
+.primary{
+  font:inherit; font-weight:700; font-size:1.1rem; color:var(--paper); background:var(--rod);
+  border:0; border-radius:999px; padding:.7rem 1.6rem; cursor:pointer;
+}
+
+.board{display:flex; flex-direction:column; gap:.3rem}
+.row{display:grid; grid-template-columns:1fr 1fr; column-gap:.4em; align-items:baseline}
+.row .q{text-align:right; white-space:nowrap}
+.row .a{text-align:left; white-space:nowrap}
+.row.done{font-size:1.2rem; color:var(--muted)}
+.row.done.good .a{color:var(--good); font-weight:700}
+.row.done.bad .a s{color:var(--bad)}
+.row.done.bad .fix{color:var(--ink); font-weight:700; margin-left:.4em}
+.row.cur{font-size:clamp(2.8rem, 12vw, 4.6rem); font-weight:700; margin:.35rem 0}
+.box{display:inline-block; min-width:2.1ch; border-bottom:.07em solid var(--rod); position:relative}
+.box::after{
+  content:""; display:inline-block; width:.06em; height:.8em; background:var(--ink);
+  margin-left:.04em; vertical-align:-.05em; animation:blink 1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.row.next{font-size:1.35rem; color:var(--muted)}
+.row.next + .row.next{opacity:.5}
+.row.fresh.good{animation:popg .35s ease-out}
+.row.fresh.bad{animation:shake .35s ease-out}
+@keyframes popg{from{transform:translateY(.5rem); opacity:.2}to{transform:none; opacity:1}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.over{text-align:center}
+.over h2{margin:0; font-size:1.1rem; color:var(--muted); font-weight:500}
+.final{font-size:3.2rem; font-weight:700; margin:.2rem 0 0; line-height:1.1}
+.final small{display:block; font-size:1rem; font-weight:400; color:var(--muted)}
+#bestLine{margin:.6rem 0 0; font-size:1rem}
+#bestLine.new{color:var(--good); font-weight:700}
+.misses{margin:1.25rem auto 0; max-width:24rem; text-align:left}
+.misses h3{font-size:1rem; margin:0 0 .4rem; font-weight:500}
+.misses{max-width:30rem}
+.misses ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.5rem}
+.misses li{border:1.5px solid var(--line); border-radius:10px; padding:.45rem .75rem; background:var(--field)}
+.misses .mq{font-weight:500}
+.misses .mq b{color:var(--good)}
+.misses .mw{font-size:.86rem; color:var(--muted); margin-top:.1rem}
+details.rules{margin:.9rem 0 0; font-size:.92rem}
+details.rules summary{cursor:pointer; color:var(--rod); font-weight:500}
+details.rules ul{margin:.4rem 0 0; padding-left:1.3rem}
+details.rules li{margin:.2rem 0}
+.u{font-size:.45em; font-weight:500; color:var(--muted); margin-left:.4em}
+.misses li .n{color:var(--bad); font-size:.85em; margin-left:.3em}
+.clean{margin:1rem 0 0; color:var(--good)}
+.over .actions{margin-top:1.4rem}
+.over .hint{margin:.6rem 0 0; color:var(--muted); font-size:.88rem}
+
+.pad{display:none; grid-template-columns:repeat(3,1fr); gap:.5rem; max-width:20rem; margin:0 auto}
+.pad button{
+  font:inherit; font-size:1.5rem; font-weight:500; padding:.6rem 0; border-radius:12px;
+  border:1.5px solid var(--line); background:var(--field); color:var(--ink); cursor:pointer;
+  touch-action:manipulation;
+}
+.pad button:active{background:var(--line)}
+@media (pointer:coarse){ .pad.on{display:grid} }
+
+.fr{display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; margin:0 .08em}
+.fr > span:first-child{border-bottom:.07em solid currentColor; padding:0 .12em .04em}
+.fr > span:last-child{padding:.04em .12em 0}
+.row.done .fr{font-size:.85em}
+.pad .enter{grid-column:1 / -1; background:var(--rod); color:var(--paper); border-color:var(--rod); font-size:1.15rem; font-weight:700}
+footer{margin-top:1.5rem; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:.8rem}
+footer p{margin:.25rem 0}
+
+.lb{margin:1.5rem auto 0; max-width:22rem; text-align:left}
+.lb h3{font-size:.95rem; font-weight:500; color:var(--muted); margin:0 0 .45rem; text-align:center}
+.lb ol{margin:0; padding:0; list-style:none; counter-reset:r; border:1.5px solid var(--line); border-radius:12px; background:var(--field); overflow:hidden}
+.lb li{counter-increment:r; display:flex; gap:.6rem; align-items:baseline; padding:.35rem .8rem; border-top:1px solid var(--line)}
+.lb li:first-child{border-top:0}
+.lb li::before{content:counter(r); width:1.4rem; color:var(--muted); font-size:.85rem}
+.lb .lb-n{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.lb .lb-s{font-weight:700}
+.lb .lb-s small{font-weight:400; color:var(--muted)}
+.lb li.me{background:color-mix(in srgb, var(--rod) 18%, transparent); font-weight:700}
+.lb-note{color:var(--muted); font-size:.9rem; text-align:center; margin:0}
+.lb-clear{display:block; margin:.5rem auto 0; font:inherit; font-size:.8rem; color:var(--muted); background:none; border:0; text-decoration:underline; cursor:pointer}
+.save{margin:.9rem auto 0; max-width:22rem; text-align:left}
+.save label{display:block; font-size:.9rem; color:var(--muted); margin-bottom:.3rem}
+.save-row{display:flex; gap:.5rem}
+.save input{flex:1; min-width:0; font:inherit; font-size:1rem; padding:.55rem .9rem; border:1.5px solid var(--line); border-radius:999px; background:var(--field); color:var(--ink)}
+.save input:focus-visible{outline:3px solid var(--unit); outline-offset:1px}
+.primary.small{font-size:.95rem; padding:.55rem 1.1rem}
+
+@media (prefers-reduced-motion: reduce){
+  .box::after{animation:none}
+  .row.fresh.good,.row.fresh.bad{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <svg viewBox="0 0 64 40" aria-hidden="true">
+      <rect x="1" y="1" width="62" height="38" rx="9" fill="var(--rod)"/>
+      <text x="32" y="26" text-anchor="middle" font-size="13" font-weight="700" font-family="Lexend, sans-serif"><tspan fill="#ffffff" fill-opacity=".55">6/8 </tspan><tspan fill="#ffffff">3/4</tspan></text>
+    </svg>
+    <div>
+      <h1>Speed Fractions</h1>
+      <p class="sub">Simplify each fraction to lowest terms. In timed rounds, right answers add a point and misses take one away.</p>
+    </div>
+  </header>
+
+  <details class="rules">
+    <summary>Tips</summary>
+    <ul>
+      <li>Divide the numerator and denominator by their greatest common factor.</li>
+      <li>If you only divide by a smaller common factor, keep going until no number other than 1 divides both.</li>
+      <li>Type answers with a slash, like 3/4.</li>
+    </ul>
+  </details>
+
+  <div class="settings">
+    <div class="seg"><span class="seg-name" id="timeLbl">Format</span>
+      <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
+        <button type="button" data-v="0" aria-pressed="false">Untimed</button>
+        <button type="button" data-v="60" aria-pressed="true">60 s</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="big" id="time">60</span><span class="lbl" id="tlbl">seconds left</span></div>
+    <div class="stat right" aria-live="polite"><span class="big" id="right">0</span><span class="lbl" id="tried">points</span></div>
+  </div>
+  <div class="timebar"><div id="timefill"></div></div>
+
+  <main class="stage">
+    <section class="ready" id="readyView">
+      <p>Press <span class="kbd">Space</span> or <span class="kbd">Enter</span> to start</p>
+      <button type="button" class="primary" id="startBtn">Start</button>
+      <div class="lb" id="lbReady"></div>
+    </section>
+
+    <section id="playView" hidden>
+      <div class="board" id="board"></div>
+    </section>
+
+    <section class="over" id="overView" hidden>
+      <h2 id="overTitle">Time’s up</h2>
+      <p class="final"><span id="fRight">0</span><small>points · <span id="fTried"></span></small></p>
+      <p id="bestLine"></p>
+      <div class="lb" id="lbOver"></div>
+      <div class="misses" id="missWrap" hidden>
+        <h3>Problems to review</h3>
+        <ul id="missList"></ul>
+      </div>
+      <p class="clean" id="cleanLine" hidden>No misses this round.</p>
+      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button></div>
+      <p class="hint">or press <span class="kbd">Space</span>. Press <span class="kbd">X</span> to reset.</p>
+    </section>
+  </main>
+
+  <div class="pad" id="pad" aria-label="Number pad">
+    <button type="button" data-d="1">1</button><button type="button" data-d="2">2</button><button type="button" data-d="3">3</button>
+    <button type="button" data-d="4">4</button><button type="button" data-d="5">5</button><button type="button" data-d="6">6</button>
+    <button type="button" data-d="7">7</button><button type="button" data-d="8">8</button><button type="button" data-d="9">9</button>
+    <button type="button" data-d="/">/</button><button type="button" data-d="0">0</button><button type="button" data-d="back" aria-label="Delete">⌫</button>
+    <button type="button" class="enter" data-d="enter">Enter</button>
+  </div>
+
+  <footer>
+    <p>Type the simplified fraction (like 3/4) and press <span class="kbd">Enter</span>. In timed rounds, each right answer is +1 point and each miss is −1. <span class="kbd">X</span> resets.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  // Problem generator: a proper fraction in lowest terms, scaled up by a factor from 2 to 9.
+  function ri(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
+  function gcd(a, b){ while (b){ var t = a % b; a = b; b = t; } return a; }
+  function fracHTML(n, d){ return "<span class=\"fr\"><span>" + n + "</span><span>" + d + "</span></span>"; }
+  function makeProblem(){
+    for (;;){
+      var q = ri(2, 12), p = ri(1, q - 1);
+      if (gcd(p, q) !== 1) continue;
+      var k = ri(2, 9), n = p * k, d = q * k;
+      if (d > 60) continue;
+      return { q: fracHTML(n, d) + " =", ans: p + "/" + q, key: n + "/" + d,
+        why: "The greatest common factor of " + n + " and " + d + " is " + k + ". " + n + " ÷ " + k + " = " + p + " and " + d + " ÷ " + k + " = " + q + "." };
+    }
+  }
+  function allowChar(c, t){
+    if (c === "−") return false;
+    if (c === "/") return t.length > 0 && t.indexOf("/") < 0;
+    return t.length < 5;
+  }
+  function inputReady(t){ return /^[0-9]+\/[0-9]+$/.test(t); }
+  function checkAnswer(t, cur){ return t === cur.ans; }
+  var DUR_NAMES = {60:"60 seconds", 0:"Untimed"};
+
+  var mode = "all", dur = 60, state = "ready";
+  var deck = [], queue = [], done = [], typed = "", correct = 0, attempted = 0;
+  var misses = new Map(), endAt = 0, raf = 0, overAt = 0;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var els = {
+    time:$("time"), right:$("right"), tried:$("tried"), fill:$("timefill"),
+    ready:$("readyView"), play:$("playView"), over:$("overView"), board:$("board"),
+    fRight:$("fRight"), fTried:$("fTried"), best:$("bestLine"),
+    tlbl:$("tlbl"), lbReady:$("lbReady"), lbOver:$("lbOver"),
+    missWrap:$("missWrap"), missList:$("missList"), clean:$("cleanLine"), pad:$("pad")
+  };
+
+  function shuffle(arr){
+    for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    return arr;
+  }
+  function draw(){
+    if (!deck.length) deck = shuffle([0]);
+    var last = queue.length ? queue[queue.length - 1].q : "", p;
+    do { p = makeProblem(deck[deck.length - 1]); } while (p.q === last);
+    deck.pop();
+    return p;
+  }
+
+  var QN = 10, startedAt = 0;
+  function lbKey(){ return "speedfractions:score:" + dur; }
+  function lbLabel(){ return DUR_NAMES[dur]; }
+  function score(){ return dur ? 2 * correct - attempted : correct; }
+  function fmtScore(n){ return n < 0 ? "−" + (-n) : String(n); }
+  function tally(){ return correct + " right · " + (attempted - correct) + " wrong"; }
+  function lbEsc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+  function lbGet(){ try { var a = JSON.parse(localStorage.getItem(lbKey()) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+  function lbSet(a){ try { localStorage.setItem(lbKey(), JSON.stringify(a)); return true; } catch(e){ return false; } }
+  function lbCmp(x, y){ return (y.s - x.s) || ((y.s / Math.max(1, y.a)) - (x.s / Math.max(1, x.a))) || (x.t - y.t); }
+  function lbQualifies(s, a){
+    if (s <= 0) return false;
+    var l = lbGet();
+    return l.length < 10 || lbCmp({s: s, a: a, t: Date.now()}, l[l.length - 1]) < 0;
+  }
+  function lbDate(t){ try { return new Date(t).toLocaleDateString(undefined, {month: "short", day: "numeric"}); } catch(e){ return ""; } }
+  function renderLB(box, hi){
+    if (!dur){
+      box.innerHTML = "<p class=\"lb-note\">Untimed: answer " + QN + " questions at your own pace. Best scores are kept for timed rounds.</p>";
+      return;
+    }
+    var l = lbGet();
+    var h = "<h3>Your best scores · " + lbEsc(lbLabel()) + "</h3>";
+    if (!l.length) h += "<p class=\"lb-note\">No scores yet. Play a round to set one.</p>";
+    else {
+      h += "<ol>" + l.map(function(r, i){
+        return "<li" + (i === hi ? " class=\"me\"" : "") + "><span class=\"lb-n\">" + lbDate(r.t) + "</span><span class=\"lb-s\">" + r.s + "<small> pts</small></span></li>";
+      }).join("") + "</ol>" + "<button type=\"button\" class=\"lb-clear\">Clear my scores</button>";
+    }
+    box.innerHTML = h;
+    var c = box.querySelector(".lb-clear");
+    if (c) c.addEventListener("click", function(){
+      if (c.getAttribute("data-armed")){ lbSet([]); renderLB(els.lbReady, -1); renderLB(els.lbOver, -1); }
+      else { c.setAttribute("data-armed", "1"); c.textContent = "Click again to clear"; }
+    });
+  }
+  function afterRound(){
+    var title = document.getElementById("overTitle");
+    els.best.className = "";
+    els.best.textContent = "";
+    if (!dur){
+      title.textContent = "Done!";
+      var secs = Math.round((performance.now() - startedAt) / 1000);
+      els.best.textContent = "Finished in " + Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0") + ".";
+      renderLB(els.lbOver, -1);
+      return;
+    }
+    title.textContent = "Time’s up";
+    if (lbQualifies(score(), attempted)){
+      var entry = {s: score(), a: attempted, t: Date.now()};
+      var l = lbGet(); l.push(entry); l.sort(lbCmp); l = l.slice(0, 10);
+      lbSet(l);
+      var rank = l.indexOf(entry);
+      els.best.textContent = rank === 0 ? "New personal best!" : "That’s #" + (rank + 1) + " on your list.";
+      els.best.className = "new";
+      renderLB(els.lbOver, rank);
+      return;
+    }
+    renderLB(els.lbOver, -1);
+  }
+  window.addEventListener("hashchange", function(){ if (state !== "playing") renderLB(els.lbReady, -1); });
+
+  function show(which){
+    els.ready.hidden = which !== "ready";
+    els.play.hidden = which !== "play";
+    els.over.hidden = which !== "over";
+    els.pad.classList.toggle("on", which === "play");
+    document.querySelectorAll(".seg-btns button").forEach(function(b){ b.disabled = which === "play"; });
+  }
+
+  function setTimeDisplay(ms){
+    if (!dur){
+      els.time.textContent = Math.min(attempted + 1, QN) + "/" + QN; els.tlbl.textContent = "question";
+      els.fill.style.transform = "scaleX(" + Math.min(1, attempted / QN) + ")"; els.fill.classList.remove("low");
+      return;
+    }
+    els.tlbl.textContent = "seconds left";
+    els.time.textContent = Math.ceil(ms / 1000);
+    var frac = Math.max(0, ms / (dur * 1000));
+    els.fill.style.transform = "scaleX(" + frac + ")";
+    els.fill.classList.toggle("low", ms <= 10000 && state === "playing");
+  }
+  function updateScore(){ els.right.textContent = fmtScore(score()); els.tried.textContent = attempted ? "points · " + tally() : "points"; if (!dur) setTimeDisplay(0); }
+
+  function reset(){
+    cancelAnimationFrame(raf);
+    state = "ready"; deck = []; queue = []; done = []; typed = "";
+    correct = 0; attempted = 0; misses = new Map();
+    updateScore(); setTimeDisplay(dur * 1000); show("ready"); renderLB(els.lbReady, -1);
+  }
+
+  function start(){
+    reset();
+    for (var i = 0; i < 3; i++) queue.push(draw());
+    state = "playing";
+    startedAt = performance.now(); endAt = startedAt + dur * 1000;
+    show("play"); render(false);
+    if (dur) raf = requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    var left = endAt - now;
+    if (left <= 0) { setTimeDisplay(0); finish(); return; }
+    setTimeDisplay(left);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+
+  function render(fresh){
+    var html = "";
+    var shown = done.slice(-2);
+    shown.forEach(function(d, i){
+      var isFresh = fresh && i === shown.length - 1;
+      var cls = "row done " + (d.ok ? "good" : "bad") + (isFresh ? " fresh" : "");
+      var a = d.ok ? esc(d.given) : "<s>" + esc(d.given) + "</s><span class=\"fix\">" + d.ans + "</span>";
+      html += "<div class=\"" + cls + "\"><span class=\"q\">" + d.q + "</span><span class=\"a\">" + a + "</span></div>";
+    });
+    for (var k = shown.length; k < 2; k++) html += "<div class=\"row done\" aria-hidden=\"true\"><span class=\"q\">&nbsp;</span><span class=\"a\"></span></div>";
+    var cur = queue[0];
+    html += "<div class=\"row cur\"><span class=\"q\">" + cur.q + "</span><span class=\"a\"><span class=\"box\">" + esc(typed) + "</span></span></div>";
+    html += "<div class=\"row next\"><span class=\"q\">" + queue[1].q + "</span><span class=\"a\"></span></div>";
+    html += "<div class=\"row next\"><span class=\"q\">" + queue[2].q + "</span><span class=\"a\"></span></div>";
+    els.board.innerHTML = html;
+  }
+
+  function submit(){
+    if (state !== "playing" || !typed || !inputReady(typed)) return;
+    var cur = queue[0];
+    var ok = checkAnswer(typed, cur);
+    attempted++;
+    if (ok) correct++;
+    else {
+      var m = misses.get(cur.key) || {q: cur.q, ans: cur.ans, why: cur.why, n: 0};
+      m.n++; misses.set(cur.key, m);
+    }
+    done.push({q: cur.q, ans: cur.ans, given: typed, ok: ok});
+    if (done.length > 4) done.shift();
+    queue.shift(); queue.push(draw());
+    typed = "";
+    updateScore(); render(true);
+    if (!dur && attempted >= QN) finish();
+  }
+
+  function digit(d){
+    if (state !== "playing") return;
+    if (d === "-") d = "−";
+    if (!allowChar(d, typed)) return;
+    typed += d;
+    render(false);
+  }
+  function back(){
+    if (state !== "playing" || !typed) return;
+    typed = typed.slice(0, -1); render(false);
+  }
+
+  function finish(){
+    state = "over"; overAt = performance.now();
+    cancelAnimationFrame(raf);
+    els.fRight.textContent = fmtScore(score());
+    els.fTried.textContent = tally();
+    afterRound();
+    var list = Array.from(misses.values()).sort(function(x, y){ return y.n - x.n; });
+    els.missList.innerHTML = list.map(function(m){
+      return "<li><div class=\"mq\">" + m.q + " <b>" + m.ans + "</b>" + (m.n > 1 ? "<span class=\"n\">×" + m.n + "</span>" : "") + "</div><div class=\"mw\">" + m.why + "</div></li>";
+    }).join("");
+    els.missWrap.hidden = list.length === 0;
+    els.clean.hidden = !(list.length === 0 && attempted > 0);
+    show("over");
+  }
+
+  // Settings
+  document.querySelectorAll(".seg-btns").forEach(function(group){
+    group.addEventListener("click", function(e){
+      var btn = e.target.closest("button"); if (!btn || btn.disabled) return;
+      var setting = group.getAttribute("data-setting");
+      var v = btn.getAttribute("data-v");
+      if (setting === "mode") mode = v; else dur = parseInt(v, 10);
+      group.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+      btn.blur();
+      reset();
+    });
+  });
+
+  $("startBtn").addEventListener("click", function(e){ e.currentTarget.blur(); start(); });
+  $("againBtn").addEventListener("click", function(e){ e.currentTarget.blur(); start(); });
+
+  els.pad.addEventListener("pointerdown", function(e){
+    var btn = e.target.closest("button"); if (!btn) return;
+    e.preventDefault();
+    var d = btn.getAttribute("data-d");
+    if (d === "back") back(); else if (d === "enter") submit(); else digit(d);
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (state === "playing") {
+      if (/^[0-9]$/.test(k) || k === "/" || k === "-") { e.preventDefault(); digit(k); }
+      else if (k === "Backspace") { e.preventDefault(); back(); }
+      else if (k === "Enter") { e.preventDefault(); submit(); }
+      else if (k === "x" || k === "X" || k === "Escape") { e.preventDefault(); reset(); }
+      else if (k === " ") { e.preventDefault(); }
+      return;
+    }
+    if (k === " " || k === "Enter") {
+      e.preventDefault();
+      if (state === "over" && performance.now() - overAt < 800) return;
+      start();
+    } else if (k === "x" || k === "X" || k === "Escape") {
+      e.preventDefault(); reset();
+    }
+  });
+
+  reset();
+})();
+</script>
+</body>
+</html>
