@@ -186,8 +186,8 @@ footer p{margin:.25rem 0}
   <div class="settings">
     <div class="seg"><span class="seg-name" id="timeLbl">Format</span>
       <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
-        <button type="button" data-v="0" aria-pressed="true">Untimed</button>
-        <button type="button" data-v="60" aria-pressed="false">60 s</button>
+        <button type="button" data-v="0" aria-pressed="false">Untimed</button>
+        <button type="button" data-v="60" aria-pressed="true">60 s</button>
       </div>
     </div>
   </div>
@@ -277,7 +277,7 @@ footer p{margin:.25rem 0}
   }
   var DUR_NAMES = {60:"60 seconds", 0:"Untimed"};
 
-  var mode = "all", dur = 0, state = "ready";
+  var mode = "all", dur = 60, state = "ready";
   var deck = [], queue = [], done = [], typed = "", correct = 0, attempted = 0;
   var misses = new Map(), endAt = 0, raf = 0, overAt = 0;
 
