@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Speed SigFig</title>
+<title>Clock Reading</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
@@ -114,7 +114,7 @@ button:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
 .misses .mw{font-size:.86rem; color:var(--muted); margin-top:.1rem}
 details.rules{margin:.9rem 0 0; font-size:.92rem}
 details.rules summary{cursor:pointer; color:var(--rod); font-weight:500}
-details.rules ol{margin:.4rem 0 0; padding-left:1.3rem}
+details.rules ul{margin:.4rem 0 0; padding-left:1.3rem}
 details.rules li{margin:.2rem 0}
 .u{font-size:.45em; font-weight:500; color:var(--muted); margin-left:.4em}
 .misses li .n{color:var(--bad); font-size:.85em; margin-left:.3em}
@@ -131,6 +131,23 @@ details.rules li{margin:.2rem 0}
 .pad button:active{background:var(--line)}
 @media (pointer:coarse){ .pad.on{display:grid} }
 
+.fr{display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; margin:0 .08em}
+.fr > span:first-child{border-bottom:.07em solid currentColor; padding:0 .12em .04em}
+.fr > span:last-child{padding:.04em .12em 0}
+.row.done .fr{font-size:.85em}
+.pad .enter{grid-column:1 / -1; background:var(--rod); color:var(--paper); border-color:var(--rod); font-size:1.15rem; font-weight:700}
+.clock{width:min(15rem, 70vw); height:auto; display:block}
+.clock .face{fill:var(--field); stroke:var(--ink); stroke-width:3}
+.clock .tick{stroke:var(--muted); stroke-width:1.2}
+.clock .tick5{stroke:var(--ink); stroke-width:2.6}
+.clock .num{font:600 15px Lexend, system-ui, sans-serif; fill:var(--ink); text-anchor:middle}
+.clock .hour{stroke:var(--ink); stroke-width:7; stroke-linecap:round}
+.clock .min{stroke:var(--rod); stroke-width:4; stroke-linecap:round}
+.clock .hub{fill:var(--ink)}
+.misses .clock{width:7rem; display:inline-block; vertical-align:middle; margin-right:.6rem}
+.misses .mq{display:flex; align-items:center}
+.row.cur{display:flex !important; flex-direction:column; align-items:center; gap:.5rem}
+.row.cur .q, .row.cur .a{text-align:center}
 footer{margin-top:1.5rem; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:.8rem}
 footer p{margin:.25rem 0}
 
@@ -153,6 +170,11 @@ footer p{margin:.25rem 0}
 .save input:focus-visible{outline:3px solid var(--unit); outline-offset:1px}
 .primary.small{font-size:.95rem; padding:.55rem 1.1rem}
 
+.home-link{display:inline-block; margin-left:.6rem; font:inherit; font-weight:700; font-size:1.1rem; color:var(--rod); background:transparent; border:2px solid var(--rod); border-radius:999px; padding:.6rem 1.4rem; text-decoration:none}
+.home-link:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
+.top-home{display:inline-block; font-size:.85rem; color:var(--muted); text-decoration:none; margin-bottom:.6rem}
+.top-home:hover{color:var(--rod)}
+
 @media (prefers-reduced-motion: reduce){
   .box::after{animation:none}
   .row.fresh.good,.row.fresh.bad{animation:none}
@@ -161,29 +183,34 @@ footer p{margin:.25rem 0}
 </head>
 <body>
 <div class="app">
+  <a class="top-home" href="./" data-home>← All math games</a>
   <header>
     <svg viewBox="0 0 64 40" aria-hidden="true">
       <rect x="1" y="1" width="62" height="38" rx="9" fill="var(--rod)"/>
-      <text x="32" y="27" text-anchor="middle" font-size="17" font-weight="700" font-family="Lexend, sans-serif"><tspan fill="#ffffff" fill-opacity=".45">0.0</tspan><tspan fill="#ffffff">40</tspan></text>
+      <text x="32" y="26" text-anchor="middle" font-size="13" font-weight="700" font-family="Lexend, sans-serif"><tspan fill="#ffffff" fill-opacity=".55">6/8 </tspan><tspan fill="#ffffff">3/4</tspan></text>
     </svg>
     <div>
-      <h1>Speed SigFig</h1>
-      <p class="sub">How many significant figures does each number have? In timed rounds, right answers add a point and misses take one away.</p>
+      <h1>Clock Reading</h1>
+      <p class="sub">Read the analog clock and type the time, like 4:37. In timed rounds, right answers add a point and misses take one away.</p>
     </div>
   </header>
 
   <details class="rules">
-    <summary>The rules</summary>
-    <ol>
-      <li>All nonzero digits are significant: 4.37 has 3.</li>
-      <li>Zeros between two significant digits are significant: 4005 has 4.</li>
-      <li>Trailing zeros to the right of the decimal point are significant: 2.500 has 4.</li>
-      <li>Leading zeros in a number between −1 and 1 are not significant: 0.0045 has 2.</li>
-      <li>Trailing zeros in a number with no decimal point are not significant: 4500 has 2.</li>
-    </ol>
+    <summary>Tips</summary>
+    <ul>
+      <li>The short hand is the hour. When it sits between two numbers, the hour is the smaller one (between 4 and 5 means 4).</li>
+      <li>The long hand is the minutes. Each number is 5 minutes, and each small mark is 1 more minute.</li>
+      <li>Type the time with a colon, like 4:37 or 12:05. There’s no a.m. or p.m.</li>
+    </ul>
   </details>
 
   <div class="settings">
+    <div class="seg"><span class="seg-name" id="modeLbl">Minutes</span>
+      <div class="seg-btns" role="group" aria-labelledby="modeLbl" data-setting="mode">
+        <button type="button" data-v="five" aria-pressed="false">Every 5</button>
+        <button type="button" data-v="any" aria-pressed="true">Any minute</button>
+      </div>
+    </div>
     <div class="seg"><span class="seg-name" id="timeLbl">Format</span>
       <div class="seg-btns" role="group" aria-labelledby="timeLbl" data-setting="dur">
         <button type="button" data-v="0" aria-pressed="false">Untimed</button>
@@ -215,11 +242,11 @@ footer p{margin:.25rem 0}
       <p id="bestLine"></p>
       <div class="lb" id="lbOver"></div>
       <div class="misses" id="missWrap" hidden>
-        <h3>Numbers to review</h3>
+        <h3>Clocks to review</h3>
         <ul id="missList"></ul>
       </div>
       <p class="clean" id="cleanLine" hidden>No misses this round.</p>
-      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button></div>
+      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button><a class="home-link" href="./" data-home>All math games</a></div>
       <p class="hint">or press <span class="kbd">Space</span>. Press <span class="kbd">X</span> to reset.</p>
     </section>
   </main>
@@ -228,56 +255,55 @@ footer p{margin:.25rem 0}
     <button type="button" data-d="1">1</button><button type="button" data-d="2">2</button><button type="button" data-d="3">3</button>
     <button type="button" data-d="4">4</button><button type="button" data-d="5">5</button><button type="button" data-d="6">6</button>
     <button type="button" data-d="7">7</button><button type="button" data-d="8">8</button><button type="button" data-d="9">9</button>
-    <button type="button" data-d="back" aria-label="Delete">⌫</button><button type="button" data-d="0">0</button><button type="button" data-d="enter" aria-label="Check">✓</button>
+    <button type="button" data-d=":">:</button><button type="button" data-d="0">0</button><button type="button" data-d="back" aria-label="Delete">⌫</button>
+    <button type="button" class="enter" data-d="enter">Enter</button>
   </div>
 
   <footer>
-    <p>Type the number of significant figures and press <span class="kbd">Enter</span>. In timed rounds, each right answer is +1 point and each miss is −1. <span class="kbd">X</span> resets.</p>
+    <p>Type the time (like 4:37) and press <span class="kbd">Enter</span>. In timed rounds, each right answer is +1 point and each miss is −1. <span class="kbd">X</span> resets.</p>
   </footer>
 </div>
 
 <script>
 (function(){
-  // Problem generator: each question targets one of the five rules, rotated evenly.
+  // Problem generator: a random time, drawn on an analog clock with minute marks and no second hand.
   function ri(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
-  function nzs(k){ var t = ""; for (var i = 0; i < k; i++) t += ri(1, 9); return t; }
-  function zeros(k){ return new Array(k + 1).join("0"); }
-  function insertDot(t){ var p = ri(1, t.length - 1); return t.slice(0, p) + "." + t.slice(p); }
-  var RULE_WHY = {
-    1: "Every digit is nonzero, and nonzero digits are always significant (rule 1).",
-    2: "Zeros between two significant digits are significant (rule 2), so every digit counts.",
-    3: "Trailing zeros to the right of the decimal point are significant (rule 3).",
-    4: "Zeros in front of the first nonzero digit are placeholders, not significant (rule 4).",
-    5: "Trailing zeros in a number with no decimal point are not significant (rule 5)."
-  };
-  function makeProblem(rule){
-    var q, ans;
-    if (rule === 1){
-      ans = ri(2, 6); q = nzs(ans);
-      if (Math.random() < 0.6) q = insertDot(q);
-    } else if (rule === 2){
-      ans = ri(3, 6);
-      do {
-        q = String(ri(1, 9));
-        for (var i = 1; i < ans - 1; i++) q += Math.random() < 0.55 ? "0" : String(ri(1, 9));
-        q += ri(1, 9);
-      } while (q.indexOf("0") < 0);
-      if (Math.random() < 0.5) q = insertDot(q);
-    } else if (rule === 3){
-      var a = ri(1, 3), f = ri(0, 2), z = ri(1, 3);
-      while (a + f + z > 6) z--;
-      ans = a + f + z; q = nzs(a) + "." + nzs(f) + zeros(z);
-    } else if (rule === 4){
-      ans = ri(1, 4); q = "0." + zeros(ri(0, 3)) + nzs(ans);
-      if (Math.random() < 0.25) q = "−" + q;
-    } else {
-      ans = ri(1, 4); q = nzs(ans) + zeros(ri(1, 4));
+  function clockSVG(h, m){
+    var c = 110, R = 100, out = "<svg class=\"clock\" viewBox=\"0 0 220 220\" role=\"img\" aria-label=\"Analog clock\">";
+    out += "<circle cx=\"110\" cy=\"110\" r=\"104\" class=\"face\"/>";
+    for (var i = 0; i < 60; i++){
+      var a = i * 6 * Math.PI / 180, big = i % 5 === 0, r1 = big ? R - 11 : R - 5;
+      out += "<line x1=\"" + (c + R * Math.sin(a)).toFixed(2) + "\" y1=\"" + (c - R * Math.cos(a)).toFixed(2) + "\" x2=\"" + (c + r1 * Math.sin(a)).toFixed(2) + "\" y2=\"" + (c - r1 * Math.cos(a)).toFixed(2) + "\" class=\"" + (big ? "tick5" : "tick") + "\"/>";
     }
-    return {q: q, ans: ans, key: q, rule: rule, why: RULE_WHY[rule]};
+    for (var n = 1; n <= 12; n++){
+      var b = n * 30 * Math.PI / 180;
+      out += "<text x=\"" + (c + 74 * Math.sin(b)).toFixed(2) + "\" y=\"" + (c - 74 * Math.cos(b) + 6).toFixed(2) + "\" class=\"num\">" + n + "</text>";
+    }
+    var ha = ((h % 12) + m / 60) * 30 * Math.PI / 180, ma = m * 6 * Math.PI / 180;
+    out += "<line x1=\"110\" y1=\"110\" x2=\"" + (c + 50 * Math.sin(ha)).toFixed(2) + "\" y2=\"" + (c - 50 * Math.cos(ha)).toFixed(2) + "\" class=\"hour\"/>";
+    out += "<line x1=\"110\" y1=\"110\" x2=\"" + (c + 84 * Math.sin(ma)).toFixed(2) + "\" y2=\"" + (c - 84 * Math.cos(ma)).toFixed(2) + "\" class=\"min\"/>";
+    return out + "<circle cx=\"110\" cy=\"110\" r=\"5\" class=\"hub\"/></svg>";
   }
+  function makeProblem(){
+    var h = ri(1, 12), m = mode === "five" ? ri(0, 11) * 5 : ri(0, 59);
+    var ans = h + ":" + (m < 10 ? "0" : "") + m;
+    var hourWhy = m === 0 ? "The hour hand points exactly at " + h + "." :
+      "The hour hand is between " + h + " and " + (h % 12 + 1) + ", so the hour is " + h + ".";
+    var minWhy = "The minute hand is " + (m % 5 === 0 ? "on the " + (m === 0 ? 12 : m / 5) + ", which is " + m + " minutes." :
+      (m % 5) + " mark" + (m % 5 === 1 ? "" : "s") + " past the " + (Math.floor(m / 5) === 0 ? 12 : Math.floor(m / 5)) + ", which is " + Math.floor(m / 5) * 5 + " + " + (m % 5) + " = " + m + " minutes.");
+    return {q: "<span class=\"mini\">🕓</span> =", big: clockSVG(h, m), ans: ans, val: ans, key: ans, why: hourWhy + " " + minWhy};
+  }
+  function allowChar(c, t){
+    if (c === "−") return false;
+    if (c === ":") return t.length > 0 && t.indexOf(":") < 0;
+    if (t.indexOf(":") >= 0) return t.split(":")[1].length < 2;
+    return t.length < 2;
+  }
+  function inputReady(t){ return /^[0-9]{1,2}:[0-9]{2}$/.test(t); }
+  function checkAnswer(t, cur){ var p = t.split(":"); return (parseInt(p[0], 10) + ":" + p[1]) === cur.ans; }
   var DUR_NAMES = {60:"60 seconds", 0:"Untimed"};
 
-  var mode = "all", dur = 60, state = "ready";
+  var mode = "any", dur = 60, state = "ready";
   var deck = [], queue = [], done = [], typed = "", correct = 0, attempted = 0;
   var misses = new Map(), endAt = 0, raf = 0, overAt = 0;
 
@@ -295,16 +321,16 @@ footer p{margin:.25rem 0}
     return arr;
   }
   function draw(){
-    if (!deck.length) deck = shuffle([1, 2, 3, 4, 5]);
-    var last = queue.length ? queue[queue.length - 1].q : "", p;
-    do { p = makeProblem(deck[deck.length - 1]); } while (p.q === last);
+    if (!deck.length) deck = shuffle([0]);
+    var last = queue.length ? queue[queue.length - 1].key : "", p;
+    do { p = makeProblem(deck[deck.length - 1]); } while (p.key === last);
     deck.pop();
     return p;
   }
 
   var QN = 10, startedAt = 0;
-  function lbKey(){ return "speedsigfig:top10:" + dur; }
-  function lbLabel(){ return DUR_NAMES[dur]; }
+  function lbKey(){ return "clockreading:score:" + mode + ":" + dur; }
+  function lbLabel(){ return (mode === "five" ? "Every 5 minutes" : "Any minute") + ", " + DUR_NAMES[dur]; }
   function score(){ return dur ? 2 * correct - attempted : correct; }
   function fmtScore(n){ return n < 0 ? "−" + (-n) : String(n); }
   function tally(){ return correct + " right · " + (attempted - correct) + " wrong"; }
@@ -422,20 +448,20 @@ footer p{margin:.25rem 0}
     });
     for (var k = shown.length; k < 2; k++) html += "<div class=\"row done\" aria-hidden=\"true\"><span class=\"q\">&nbsp;</span><span class=\"a\"></span></div>";
     var cur = queue[0];
-    html += "<div class=\"row cur\"><span class=\"q\">" + cur.q + "</span><span class=\"a\"><span class=\"box\">" + esc(typed) + "</span><span class=\"u\">sig figs</span></span></div>";
+    html += "<div class=\"row cur\"><span class=\"q\">" + (cur.big || cur.q) + "</span><span class=\"a\"><span class=\"box\">" + esc(typed) + "</span></span></div>";
     html += "<div class=\"row next\"><span class=\"q\">" + queue[1].q + "</span><span class=\"a\"></span></div>";
     html += "<div class=\"row next\"><span class=\"q\">" + queue[2].q + "</span><span class=\"a\"></span></div>";
     els.board.innerHTML = html;
   }
 
   function submit(){
-    if (state !== "playing" || !typed) return;
+    if (state !== "playing" || !typed || !inputReady(typed)) return;
     var cur = queue[0];
-    var ok = parseInt(typed, 10) === cur.ans;
+    var ok = checkAnswer(typed, cur);
     attempted++;
     if (ok) correct++;
     else {
-      var m = misses.get(cur.key) || {q: cur.q, ans: cur.ans, why: cur.why, n: 0};
+      var m = misses.get(cur.key) || {q: cur.big || cur.q, ans: cur.ans, why: cur.why, n: 0};
       m.n++; misses.set(cur.key, m);
     }
     done.push({q: cur.q, ans: cur.ans, given: typed, ok: ok});
@@ -448,7 +474,8 @@ footer p{margin:.25rem 0}
 
   function digit(d){
     if (state !== "playing") return;
-    if (typed.length >= 1) return;
+    if (d === "-") d = "−";
+    if (!allowChar(d, typed)) return;
     typed += d;
     render(false);
   }
@@ -465,7 +492,7 @@ footer p{margin:.25rem 0}
     afterRound();
     var list = Array.from(misses.values()).sort(function(x, y){ return y.n - x.n; });
     els.missList.innerHTML = list.map(function(m){
-      return "<li><div class=\"mq\">" + m.q + " has <b>" + m.ans + "</b> sig fig" + (m.ans === 1 ? "" : "s") + (m.n > 1 ? "<span class=\"n\">×" + m.n + "</span>" : "") + "</div><div class=\"mw\">" + m.why + "</div></li>";
+      return "<li><div class=\"mq\">" + m.q + " <b>" + m.ans + "</b>" + (m.n > 1 ? "<span class=\"n\">×" + m.n + "</span>" : "") + "</div><div class=\"mw\">" + m.why + "</div></li>";
     }).join("");
     els.missWrap.hidden = list.length === 0;
     els.clean.hidden = !(list.length === 0 && attempted > 0);
@@ -499,7 +526,7 @@ footer p{margin:.25rem 0}
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     var k = e.key;
     if (state === "playing") {
-      if (/^[0-9]$/.test(k)) { e.preventDefault(); digit(k); }
+      if (/^[0-9]$/.test(k) || k === ":") { e.preventDefault(); digit(k); }
       else if (k === "Backspace") { e.preventDefault(); back(); }
       else if (k === "Enter") { e.preventDefault(); submit(); }
       else if (k === "x" || k === "X" || k === "Escape") { e.preventDefault(); reset(); }
@@ -518,5 +545,6 @@ footer p{margin:.25rem 0}
   reset();
 })();
 </script>
+<script>if (/claude/.test(location.hostname) || location.protocol === "blob:") document.querySelectorAll("[data-home]").forEach(function(a){ a.hidden = true; });</script>
 </body>
 </html>

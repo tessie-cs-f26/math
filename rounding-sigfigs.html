@@ -152,6 +152,11 @@ footer p{margin:.25rem 0}
 .save input:focus-visible{outline:3px solid var(--unit); outline-offset:1px}
 .primary.small{font-size:.95rem; padding:.55rem 1.1rem}
 
+.home-link{display:inline-block; margin-left:.6rem; font:inherit; font-weight:700; font-size:1.1rem; color:var(--rod); background:transparent; border:2px solid var(--rod); border-radius:999px; padding:.6rem 1.4rem; text-decoration:none}
+.home-link:focus-visible{outline:3px solid var(--unit); outline-offset:2px}
+.top-home{display:inline-block; font-size:.85rem; color:var(--muted); text-decoration:none; margin-bottom:.6rem}
+.top-home:hover{color:var(--rod)}
+
 @media (prefers-reduced-motion: reduce){
   .box::after{animation:none}
   .row.fresh.good,.row.fresh.bad{animation:none}
@@ -160,6 +165,7 @@ footer p{margin:.25rem 0}
 </head>
 <body>
 <div class="app">
+  <a class="top-home" href="./" data-home>← All math games</a>
   <header>
     <svg viewBox="0 0 74 40" aria-hidden="true">
       <rect x="1" y="12" width="72" height="20" rx="3" fill="none" stroke="var(--rod)" stroke-width="2.5"/>
@@ -228,7 +234,7 @@ footer p{margin:.25rem 0}
         <ul id="missList"></ul>
       </div>
       <p class="clean" id="cleanLine" hidden>No misses this round.</p>
-      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button></div>
+      <div class="actions"><button type="button" class="primary" id="againBtn">Play again</button><a class="home-link" href="./" data-home>All math games</a></div>
       <p class="hint">or press <span class="kbd">Space</span>. Press <span class="kbd">X</span> to reset.</p>
     </section>
   </main>
@@ -629,5 +635,6 @@ var SigGen = (function(){
   reset();
 })();
 </script>
+<script>if (/claude/.test(location.hostname) || location.protocol === "blob:") document.querySelectorAll("[data-home]").forEach(function(a){ a.hidden = true; });</script>
 </body>
 </html>
