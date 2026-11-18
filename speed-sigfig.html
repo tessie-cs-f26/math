@@ -379,7 +379,7 @@ footer p{margin:.25rem 0}
         return "<li" + (myId && r.id === myId ? " class=\"me\"" : "") + "><span class=\"lb-n\">" + lbEsc(r.name) + "</span><span class=\"lb-s\">" + lbEsc(r.score) + "<small> pts</small></span></li>";
       }).join("") + "</ol>";
     }
-    cbCall({action: "top", game: GAME_ID, setting: setting})
+    cbCall({action: "top", sheet: "math", game: GAME_ID, setting: setting})
       .then(function(d){ show(d && d.ok ? d.top : null); })
       .catch(function(){ show(null); });
     var input = box.querySelector("#cbName"), btn = box.querySelector("#cbPost");
@@ -390,7 +390,7 @@ footer p{margin:.25rem 0}
       var name = input.value.trim();
       if (!name){ input.focus(); return; }
       btn.disabled = true; msg.className = "cb-msg"; msg.textContent = "Posting…";
-      cbCall({action: "add", game: GAME_ID, setting: setting, name: name, score: round.score, right: round.right, wrong: round.wrong})
+      cbCall({action: "add", sheet: "math", game: GAME_ID, setting: setting, name: name, score: round.score, right: round.right, wrong: round.wrong})
         .then(function(d){
           if (d && d.ok){
             posted = true; cbSaveName(name);
