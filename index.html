@@ -52,12 +52,23 @@ h1{margin:0; font-size:2.2rem; letter-spacing:-.02em; line-height:1.1}
 .game h2{margin:0; font-size:1.25rem}
 .game p{margin:.2rem 0 0; color:var(--muted); font-size:.92rem}
 .arrow{margin-left:auto; color:var(--rod); font-size:1.4rem; flex:none}
+.namebox{border:1.5px solid var(--line, #e2ddcf); border-radius:14px; padding:.8rem 1rem; margin:0 0 1.2rem; background:var(--field, #fff)}
+.namebox label{display:block; font-weight:700; margin-bottom:.4rem}
+.namerow{display:flex; gap:.5rem}
+.namerow input{flex:1; min-width:0; font:inherit; font-size:1rem; padding:.5rem .9rem; border:1.5px solid var(--line, #e2ddcf); border-radius:999px; background:transparent; color:inherit}
+.namerow button{font:inherit; font-weight:700; color:#fff; background:#3a6fd0; border:0; border-radius:999px; padding:.5rem 1.2rem; cursor:pointer}
+.namenote{font-size:.85rem; opacity:.75; margin:.4rem 0 0}
 </style>
 </head>
 <body>
 <main class="app">
   <h1>Math Practice Games</h1>
   <p class="sub">Pick a game. Answer 10 questions at your own pace, or play a timed round to beat your best score. In timed rounds, every right answer is +1 point and every miss is −1.</p>
+  <div class="namebox">
+    <label for="who">Your name for the class leaderboards</label>
+    <div class="namerow"><input id="who" type="text" maxlength="15" autocomplete="off" placeholder="First name + last initial"><button type="button" id="whoSave">Save</button></div>
+    <p class="namenote" id="whoNote">Saved on this device, so every game fills it in for you.</p>
+  </div>
   <h2 class="section">Pre-algebra</h2>
   <ul class="games">
     <li><a class="game" href="speedcarry.html">
@@ -106,5 +117,19 @@ h1{margin:0; font-size:2.2rem; letter-spacing:-.02em; line-height:1.1}
     </a></li>
   </ul>
 </main>
+<script>
+(function(){
+  // the student's name, remembered on this device for every game (math, trivia and bridge)
+  var who = document.getElementById("who"), note = document.getElementById("whoNote");
+  try { who.value = localStorage.getItem("trivia:name") || ""; } catch(e){}
+  function save(){
+    var n = who.value.trim().slice(0, 15);
+    try { if (n) localStorage.setItem("trivia:name", n); else localStorage.removeItem("trivia:name"); } catch(e){}
+    note.textContent = n ? "Saved, " + n + "! Every game will fill in your name." : "Name cleared.";
+  }
+  document.getElementById("whoSave").addEventListener("click", save);
+  who.addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); save(); } });
+})();
+</script>
 </body>
 </html>
