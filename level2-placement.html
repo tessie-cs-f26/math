@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Level 2 Math Placement Check (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f4f6fb;--surface:#ffffff;--ink:#1d2540;--muted:#5b6482;--line:#d6dcea;--soft:#cdd3e0;
+  --t1:#3d6fd9;--t2:#f0b23a;--t3:#4fb393;--copper:#d0956a;--focus:#3d6fd9;--good:#257a5e;--bad:#b23a32;
+  --sel:#e6eefc;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#121829;--surface:#1b2338;--ink:#e8ebf4;--muted:#9ba4bf;--line:#2f3956;--soft:#5a6380;
+    --t1:#6690f0;--t2:#f2c15a;--t3:#5ec7a4;--copper:#c98d62;--focus:#9db9ff;--good:#6fd3ae;--bad:#f08a7f;
+    --sel:#243259;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121829;--surface:#1b2338;--ink:#e8ebf4;--muted:#9ba4bf;--line:#2f3956;--soft:#5a6380;
+  --t1:#6690f0;--t2:#f2c15a;--t3:#5ec7a4;--copper:#c98d62;--focus:#9db9ff;--good:#6fd3ae;--bad:#f08a7f;
+  --sel:#243259;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:1.125rem;line-height:1.5}
+main{max-width:46rem;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+.brand{display:flex;align-items:center;gap:.6rem;color:var(--muted);font-size:1rem;margin:.25rem 0 1.25rem}
+.brand .logo{height:42px;width:auto;display:block}
+h1{font-size:clamp(2.2rem,7vw,3.2rem);line-height:1.05;margin:.2rem 0 .6rem;letter-spacing:-.01em}
+h2{font-size:1.6rem;line-height:1.15;margin:0 0 .5rem}
+p{margin:0 0 1rem}
+.lede{font-size:1.3rem;color:var(--muted);max-width:34rem}
+label{display:block;font-weight:700;margin-bottom:.35rem}
+input[type=text],input.num{font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:.6rem .8rem}
+input[type=text]{font-size:1.35rem;width:min(100%,22rem)}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.check{display:flex;gap:.6rem;align-items:center;font-weight:400;margin:1rem 0 1.5rem}
+.check input{width:1.3rem;height:1.3rem;accent-color:var(--t1)}
+button{font:inherit;cursor:pointer}
+.primary{background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:.8rem 1.8rem;font-size:1.25rem;font-weight:700}
+.primary:disabled{opacity:.35;cursor:not-allowed}
+.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:.6rem 1.2rem;font-size:1.05rem}
+.teacher-note{margin-top:2.5rem;border-top:2px solid var(--line);padding-top:1rem;color:var(--muted);font-size:1rem}
+.teacher-note summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.teacher-note p{margin:.6rem 0 0;max-width:38rem}
+
+.progress{display:flex;justify-content:center;margin:0 0 1rem}
+.progress .hex{transition:fill .35s ease}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:1.4rem 1.4rem 1.2rem}
+.qhead{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between}
+.q{font-size:clamp(1.35rem,3.6vw,1.7rem);line-height:1.35;margin:0 0 1rem;max-width:32rem}
+.q:focus{outline:none}
+.read{flex:none;display:inline-flex;align-items:center;gap:.4rem;font-size:.95rem;padding:.45rem .9rem}
+.fig-wrap{display:flex;justify-content:center;margin:.5rem 0 1.25rem;overflow-x:auto}
+.fig{max-width:100%;height:auto}
+.eq{font-size:clamp(2rem,7vw,2.8rem);font-weight:700;letter-spacing:.02em;text-align:center;padding:.4rem 0}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.75rem;margin-bottom:1.25rem}
+.choice{background:var(--paper);color:var(--ink);border:2px solid var(--line);border-radius:14px;min-height:4rem;padding:.6rem;font-size:1.35rem;font-weight:700}
+.choice[aria-pressed="true"]{border-color:var(--t1);background:var(--sel);box-shadow:inset 0 0 0 2px var(--t1)}
+.choice.sym{font-size:2rem}
+.numrow{display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;justify-content:center}
+input.num{font-size:2.2rem;width:7ch;text-align:center;font-weight:700}
+.unit{font-size:1.6rem;font-weight:700;color:var(--muted)}
+.actions{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+
+svg text{fill:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif}
+.f-ink{fill:var(--ink)}.f-surf{fill:var(--surface)}.f-paper{fill:var(--paper)}.f-soft{fill:var(--soft)}
+.f-t1{fill:var(--t1)}.f-t2{fill:var(--t2)}.f-t3{fill:var(--t3)}.f-copper{fill:var(--copper)}.f-muted{fill:var(--muted)}
+.s-ink{stroke:var(--ink)}.s-line{stroke:var(--line)}.s-muted{stroke:var(--muted)}.s-t1{stroke:var(--t1)}
+
+.done-wrap{text-align:center;padding:2rem 0}
+.done-wrap h1{margin-bottom:1rem}
+.report-head{margin-bottom:1.25rem}
+.report-head p{color:var(--muted);margin:0}
+.rec{border-left:6px solid var(--t1);background:var(--surface);border-radius:0 14px 14px 0;padding:1rem 1.2rem;margin:0 0 1.5rem}
+.rec strong{display:block;font-size:1.3rem;margin-bottom:.25rem}
+.rec p{margin:0}
+.tablewrap{overflow-x:auto;margin-bottom:1.5rem;border:2px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:1rem}
+th,td{text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:.95rem;color:var(--muted)}
+.std{color:var(--muted);font-size:.9rem}
+.badge{display:inline-block;border-radius:999px;padding:.1rem .6rem;font-weight:700;font-size:.9rem;white-space:nowrap}
+.b-PRO{background:var(--t3);color:#10261f}.b-DEV{background:var(--t2);color:#2b1f05}.b-BEG{background:var(--soft);color:var(--ink)}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+details.log summary{cursor:pointer;font-weight:700;margin-bottom:.75rem}
+.report-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+@media (max-width:520px){.qhead{flex-direction:column-reverse;gap:.5rem}.card{padding:1.1rem}}
+@media (prefers-reduced-motion:reduce){.progress .hex{transition:none}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+/* ============ Placement rules (tune these) ============ */
+const RULES = {
+  // Strand rating from the 3 core items: 3 = PRO, 2 = DEV, 0-1 = BEG
+  advance:   { minPro: 8, minStretch: 6 },  // try the Level 3 placement next
+  level3:    { maxBeg: 0, minPro: 6 },      // place in Level 3
+  borderline:{ maxBeg: 1, minPro: 4 }       // teacher judgment
+};
+
+/* ============ Helpers ============ */
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const uniq=a=>[...new Set(a.map(String))];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f1=n=>n.toFixed(1);
+const fmt=(h,m)=>`${h}:${String(m).padStart(2,'0')}`;
+const NAMES=['Maya','Leo','Ava','Sam','Priya','Kenji','Rosa','Omar','Nia','Theo'];
+const digits3=()=>shuffle([1,2,3,4,5,6,7,8,9]).slice(0,3);
+const ONES=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function numName(n){const h=Math.floor(n/100),r=n%100,s=[];if(h)s.push(ONES[h]+' hundred');if(r){if(r<20)s.push(ONES[r]);else{const t=Math.floor(r/10),o=r%10;s.push(TENS[t]+(o?'-'+ONES[o]:''))}}return s.join(' ')}
+const num=o=>({kind:'num',...o,answer:String(o.answer)});
+function mc(o){const ch=uniq(o.choices);return {kind:'mc',...o,answer:String(o.answer),choices:o.fixed?ch:shuffle(ch)}}
+function fillChoices(answer,cands,n=4){const out=[String(answer)];for(const c of cands){const s=String(c);if(!out.includes(s))out.push(s);if(out.length===n)break}return out}
+const eq=s=>`<div class="eq">${s}</div>`;
+
+/* ============ Figures (SVG) ============ */
+const svg=(w,h,inner,label,scale=1)=>`<svg class="fig" viewBox="0 0 ${w} ${h}" width="${Math.round(w*scale)}" role="img" aria-label="${label}">${inner}</svg>`;
+
+function blocksSVG(h,t,o){let x=8,s='';
+  for(let i=0;i<h;i++){s+=`<rect x="${x}" y="8" width="60" height="60" class="f-t1 s-ink" stroke-width="1.5"/>`;
+    for(let k=1;k<10;k++)s+=`<line x1="${x+6*k}" y1="8" x2="${x+6*k}" y2="68" class="s-ink" stroke-width=".6" opacity=".45"/><line x1="${x}" y1="${8+6*k}" x2="${x+60}" y2="${8+6*k}" class="s-ink" stroke-width=".6" opacity=".45"/>`;
+    x+=70}
+  if(h)x+=6;
+  for(let i=0;i<t;i++){s+=`<rect x="${x}" y="8" width="6" height="60" class="f-t3 s-ink" stroke-width="1.2"/>`;
+    for(let k=1;k<10;k++)s+=`<line x1="${x}" y1="${8+6*k}" x2="${x+6}" y2="${8+6*k}" class="s-ink" stroke-width=".5" opacity=".5"/>`;
+    x+=11}
+  if(t)x+=10;
+  for(let i=0;i<o;i++)s+=`<rect x="${x+(i%3)*10}" y="${8+Math.floor(i/3)*10}" width="7" height="7" class="f-t2 s-ink" stroke-width="1"/>`;
+  return svg(x+(o?32:0)+8,76,s,'Base-ten blocks',1.35)}
+
+function rulerSVG(bars,maxCm=15){const u=32,L=20,top=8,bh=20,gap=14,ry=top+bars.length*(bh+gap)+6,W=L*2+maxCm*u;let s='';
+  bars.forEach((b,i)=>{const y=top+i*(bh+gap);
+    s+=`<rect x="${L+b.from*u}" y="${y}" width="${(b.to-b.from)*u}" height="${bh}" rx="6" class="${b.cls} s-ink" stroke-width="1.5"/>`;
+    for(const e of [b.from,b.to])s+=`<line x1="${L+e*u}" y1="${y+bh}" x2="${L+e*u}" y2="${ry}" class="s-muted" stroke-width="1.2" stroke-dasharray="3 3"/>`});
+  s+=`<rect x="${L-12}" y="${ry}" width="${maxCm*u+24}" height="46" rx="4" class="f-surf s-ink" stroke-width="1.5"/>`;
+  for(let c=0;c<=maxCm;c++){const x=L+c*u;
+    s+=`<line x1="${x}" y1="${ry}" x2="${x}" y2="${ry+16}" class="s-ink" stroke-width="1.5"/><text x="${x}" y="${ry+36}" text-anchor="middle" font-size="14">${c}</text>`;
+    if(c<maxCm)s+=`<line x1="${x+u/2}" y1="${ry}" x2="${x+u/2}" y2="${ry+8}" class="s-ink" stroke-width="1"/>`}
+  return svg(W,ry+52,s,'Centimeter ruler',1.25)}
+
+function ribbonsSVG(lens,cls){let s='';lens.forEach((L,i)=>s+=`<rect x="10" y="${10+i*36}" width="${L*26}" height="22" rx="6" class="${cls[i]} s-ink" stroke-width="1.5"/>`);
+  return svg(Math.max(...lens)*26+20,12+lens.length*36,s,'Three ribbons',1.2)}
+
+function rectSVG(w,h){const u=26,x=70,y=34;let s=`<rect x="${x}" y="${y}" width="${w*u}" height="${h*u}" class="f-t3 s-ink" stroke-width="3"/>`;
+  s+=`<text x="${x+w*u/2}" y="${y-10}" text-anchor="middle" font-size="18" font-weight="700">${w} cm</text>`;
+  s+=`<text x="${x-10}" y="${y+h*u/2+6}" text-anchor="end" font-size="18" font-weight="700">${h} cm</text>`;
+  return svg(x+w*u+16,y+h*u+12,s,'Rectangle',1.2)}
+
+function clockSVG(h,m){const cx=100,cy=100;let s=`<circle cx="100" cy="100" r="92" class="f-surf s-ink" stroke-width="4"/>`;
+  for(let i=0;i<60;i++){const a=i*Math.PI/30,r1=i%5?84:77;s+=`<line x1="${f1(cx+r1*Math.sin(a))}" y1="${f1(cy-r1*Math.cos(a))}" x2="${f1(cx+88*Math.sin(a))}" y2="${f1(cy-88*Math.cos(a))}" class="s-ink" stroke-width="${i%5?1:2.5}"/>`}
+  for(let n=1;n<=12;n++){const a=n*Math.PI/6;s+=`<text x="${f1(cx+63*Math.sin(a))}" y="${f1(cy-63*Math.cos(a)+7)}" text-anchor="middle" font-size="20" font-weight="700">${n}</text>`}
+  const ha=((h%12)+m/60)*Math.PI/6,ma=m*Math.PI/30;
+  s+=`<line x1="100" y1="100" x2="${f1(cx+42*Math.sin(ha))}" y2="${f1(cy-42*Math.cos(ha))}" class="s-ink" stroke-width="8" stroke-linecap="round"/>`;
+  s+=`<line x1="100" y1="100" x2="${f1(cx+72*Math.sin(ma))}" y2="${f1(cy-72*Math.cos(ma))}" class="s-ink" stroke-width="4" stroke-linecap="round"/>`;
+  s+=`<circle cx="100" cy="100" r="6" class="f-ink"/>`;
+  return svg(200,200,s,'Clock face',1.15)}
+
+const COIN={q:{v:25,r:26,c:'f-soft'},d:{v:10,r:18,c:'f-soft'},n:{v:5,r:22,c:'f-soft'},p:{v:1,r:20,c:'f-copper'}};
+function coinsSVG(list){let x=8,s='';list.forEach(k=>{const c=COIN[k];
+  s+=`<circle cx="${x+c.r}" cy="34" r="${c.r}" class="${c.c} s-ink" stroke-width="1.5"/><text x="${x+c.r}" y="40" text-anchor="middle" font-size="${c.r>19?16:13}" font-weight="700">${c.v}¢</text>`;x+=c.r*2+8});
+  return svg(x,68,s,'Coins',1.3)}
+
+function picGraphSVG(cats,counts,keyText){const rowH=38,lw=96,ic=26,max=Math.max(...counts),H=10+cats.length*rowH;let s='';
+  cats.forEach((c,i)=>{const y=10+i*rowH;s+=`<text x="${lw-14}" y="${y+22}" text-anchor="end" font-size="16">${c}</text>`;
+    for(let j=0;j<counts[i];j++)s+=`<circle cx="${lw+j*ic+12}" cy="${y+16}" r="10" class="${['f-t1','f-t2','f-t3','f-copper'][i%4]}"/>`});
+  s+=`<line x1="${lw-4}" y1="6" x2="${lw-4}" y2="${H}" class="s-line" stroke-width="2"/>`;
+  let extra=0;if(keyText){s+=`<circle cx="${lw+12}" cy="${H+22}" r="10" class="f-ink"/><text x="${lw+30}" y="${H+28}" font-size="16">${keyText}</text>`;extra=42}
+  return svg(Math.max(lw+max*ic+24,300),H+extra+6,s,'Picture graph',1.2)}
+
+function barGraphSVG(cats,counts,maxY=10){const x0=44,y0=232,u=20,bw=48,gap=26,W=x0+cats.length*(bw+gap)+10;let s='';
+  for(let v=0;v<=maxY;v++){const y=y0-v*u;s+=`<line x1="${x0}" y1="${y}" x2="${W-6}" y2="${y}" class="s-line" stroke-width="1"/><text x="${x0-8}" y="${y+5}" text-anchor="end" font-size="13">${v}</text>`}
+  cats.forEach((c,i)=>{const x=x0+gap/2+i*(bw+gap);s+=`<rect x="${x}" y="${y0-counts[i]*u}" width="${bw}" height="${counts[i]*u}" class="f-t1"/><text x="${x+bw/2}" y="${y0+22}" text-anchor="middle" font-size="14">${c}</text>`});
+  s+=`<line x1="${x0}" y1="${y0-maxY*u-4}" x2="${x0}" y2="${y0}" class="s-ink" stroke-width="2"/><line x1="${x0}" y1="${y0}" x2="${W-6}" y2="${y0}" class="s-ink" stroke-width="2"/>`;
+  return svg(W,y0+32,s,'Bar graph',1.15)}
+
+function linePlotSVG(vals,counts){const x0=40,u=64,y=150,W=x0*2+(vals.length-1)*u;let s=`<line x1="${x0-24}" y1="${y}" x2="${W-x0+24}" y2="${y}" class="s-ink" stroke-width="2"/>`;
+  vals.forEach((v,i)=>{const x=x0+i*u;s+=`<line x1="${x}" y1="${y-7}" x2="${x}" y2="${y+7}" class="s-ink" stroke-width="2"/><text x="${x}" y="${y+28}" text-anchor="middle" font-size="16">${v}</text>`;
+    for(let k=0;k<counts[i];k++)s+=`<text x="${x}" y="${y-14-k*26}" text-anchor="middle" font-size="22" font-weight="700" class="f-t1">X</text>`});
+  s+=`<text x="${W/2}" y="${y+54}" text-anchor="middle" font-size="15" class="f-muted">Pencil length (inches)</text>`;
+  return svg(W,y+62,s,'Line plot',1.15)}
+
+function arraySVG(r,c){let s='';for(let i=0;i<r;i++)for(let j=0;j<c;j++)s+=`<circle cx="${20+j*32}" cy="${20+i*32}" r="11" class="f-t3"/>`;
+  return svg(c*32+8,r*32+8,s,'Array of dots',1.3)}
+
+function polySVG(n,irregular){const cx=100,cy=100,step=2*Math.PI/n,st=Math.random()*Math.PI,pts=[];
+  for(let i=0;i<n;i++){const a=st+i*step+(irregular?(Math.random()-.5)*step*.35:0),r=irregular?72*(.82+Math.random()*.18):72;pts.push(`${f1(cx+r*Math.cos(a))},${f1(cy+r*Math.sin(a))}`)}
+  return svg(200,200,`<polygon points="${pts.join(' ')}" class="f-t2 s-ink" stroke-width="3" stroke-linejoin="round"/>`,'A shape',1)}
+
+function gridSVG(r,c){const u=40;let s=`<rect x="4" y="4" width="${c*u}" height="${r*u}" class="f-t3 s-ink" stroke-width="3"/>`;
+  for(let i=1;i<c;i++)s+=`<line x1="${4+i*u}" y1="4" x2="${4+i*u}" y2="${4+r*u}" class="s-ink" stroke-width="2"/>`;
+  for(let i=1;i<r;i++)s+=`<line x1="4" y1="${4+i*u}" x2="${4+c*u}" y2="${4+i*u}" class="s-ink" stroke-width="2"/>`;
+  return svg(c*u+8,r*u+8,s,'Rectangle split into squares',1.2)}
+
+function fracSVG(shape,parts,shaded){let s='';
+  if(shape==='circle'){const cx=90,cy=90,r=80;
+    for(let i=0;i<parts;i++){const a0=-Math.PI/2+i*2*Math.PI/parts,a1=a0+2*Math.PI/parts;
+      s+=`<path d="M${cx},${cy} L${f1(cx+r*Math.cos(a0))},${f1(cy+r*Math.sin(a0))} A${r},${r} 0 0 1 ${f1(cx+r*Math.cos(a1))},${f1(cy+r*Math.sin(a1))} Z" class="${i<shaded?'f-t1':'f-surf'} s-ink" stroke-width="3" stroke-linejoin="round"/>`}
+    return svg(180,180,s,'Circle in equal parts',1.1)}
+  const W=240,H=110,w=W/parts;
+  for(let i=0;i<parts;i++)s+=`<rect x="${f1(4+i*w)}" y="4" width="${f1(w)}" height="${H}" class="${i<shaded?'f-t1':'f-surf'} s-ink" stroke-width="3"/>`;
+  return svg(W+8,H+8,s,'Rectangle in equal parts',1.15)}
+
+/* ============ Item generators ============ */
+const STRANDS=[
+{ id:'A', name:'Place value to 1000', stds:'2.NBT.A.1, 2.NBT.A.3, 2.NBT.A.4', ch:'Ch. 1',
+  core:[
+    ()=>{const h=R(1,5),t=R(0,9),o=R(1,9);return num({std:'2.NBT.A.1',q:'What number do the blocks show?',fig:blocksSVG(h,t,o),answer:h*100+t*10+o})},
+    ()=>{const [a,b,c]=digits3(),n=a*100+b*10+c;return mc({std:'2.NBT.A.3',q:`Which number is <strong>${numName(n)}</strong>?`,say:`Which number is ${numName(n)}?`,answer:n,choices:[n,a*100+c*10+b,b*100+a*10+c,c*100+b*10+a]})},
+    ()=>{const [a,b,c]=digits3(),x=a*100+b*10+c,y=a*100+c*10+b;return mc({std:'2.NBT.A.4',q:'Which sign makes this true?',say:`Which sign goes between ${x} and ${y}? Less than, equal to, or greater than?`,fig:eq(`${x} ☐ ${y}`),answer:x>y?'>':'<',choices:['<','=','>'],fixed:true,sym:true})}
+  ],
+  stretch:()=>{let n;do{n=R(101,989)}while(n%10===0||n%10===5);return num({std:'3.NBT.A.1',q:`Round <strong>${n}</strong> to the nearest ten.`,say:`Round ${n} to the nearest ten.`,answer:Math.round(n/10)*10})},
+  floor:()=>{const t=R(2,9),o=R(1,9);return num({std:'1.NBT.B.2',q:'What number do the blocks show?',fig:blocksSVG(0,t,o),answer:t*10+o})}
+},
+{ id:'B', name:'Adding and subtracting', stds:'2.NBT.B.5, 2.NBT.B.7', ch:'Ch. 2 and 3',
+  core:[
+    ()=>{const a=10*R(1,5)+R(5,9),b=10*R(1,3)+R(5,9);return num({std:'2.NBT.B.5',q:'Add.',say:`What is ${a} plus ${b}?`,fig:eq(`${a} + ${b} = ?`),answer:a+b})},
+    ()=>{const a=10*R(5,9)+R(0,4),b=10*R(1,4)+R(5,9);return num({std:'2.NBT.B.5',q:'Subtract.',say:`What is ${a} minus ${b}?`,fig:eq(`${a} − ${b} = ?`),answer:a-b})},
+    ()=>{const a=R(5,9)*100+R(1,4)*10+R(0,3),b=R(1,4)*100+R(5,8)*10+R(4,9);return num({std:'2.NBT.B.7',q:'Subtract.',say:`What is ${a} minus ${b}?`,fig:eq(`${a} − ${b} = ?`),answer:a-b})}
+  ],
+  stretch:()=>{const b=R(120,299),c=R(200,599);return num({std:'3.NBT.A.2',q:'What number goes in the box?',say:`Some number minus ${b} equals ${c}. What number goes in the box?`,fig:eq(`☐ − ${b} = ${c}`),answer:b+c})},
+  floor:()=>{const a=R(6,9),b=R(5,9);return num({std:'1.OA.C.6',q:'Add.',say:`What is ${a} plus ${b}?`,fig:eq(`${a} + ${b} = ?`),answer:a+b})}
+},
+{ id:'C', name:'Word problems', stds:'2.OA.A.1', ch:'Ch. 4',
+  core:[
+    ()=>{const n=pick(NAMES),x=R(42,85),y=R(13,29);return num({std:'2.OA.A.1',q:`${n} had ${x} stickers. ${n} gave ${y} stickers to a friend. How many stickers does ${n} have now?`,answer:x-y})},
+    ()=>{const [n1,n2]=shuffle(NAMES),a=R(50,90),d=R(12,29);return num({std:'2.OA.A.1',q:`${n1} has ${a} marbles. That is ${d} more than ${n2} has. How many marbles does ${n2} have?`,answer:a-d})},
+    ()=>{const p=R(30,48),off=R(11,19),on=R(12,25);return num({std:'2.OA.A.1',q:`There are ${p} people on a bus. At the first stop, ${off} people get off and ${on} people get on. How many people are on the bus now?`,answer:p-off+on})}
+  ],
+  stretch:()=>{const n=pick(NAMES),k=R(3,6),m=R(4,8),g=R(5,k*m-5);return num({std:'3.OA.D.8',q:`${n} buys ${k} packs of pencils. Each pack has ${m} pencils. ${n} gives away ${g} pencils. How many pencils are left?`,answer:k*m-g})},
+  floor:()=>{const a=R(6,12),b=R(3,8);return num({std:'1.OA.A.1',q:`There are ${a} birds in a tree. ${b} more birds fly in. How many birds are in the tree now?`,answer:a+b})}
+},
+{ id:'D', name:'Skip counting, arrays, odd and even', stds:'2.NBT.A.2, 2.OA.C.4, 2.OA.C.3', ch:'Ch. 8 and 9',
+  core:[
+    ()=>{const d=pick([5,10,100]);const s=d===5?5*R(21,190):d===10?R(110,850):R(105,598);return num({std:'2.NBT.A.2',q:'What number comes next?',say:`${s}, ${s+d}, ${s+2*d}. What number comes next?`,fig:eq(`${s}, ${s+d}, ${s+2*d}, ?`),answer:s+3*d})},
+    ()=>{let r,c;do{r=R(3,5);c=R(3,6)}while(r===c);const rep=(k,v)=>Array(k).fill(v).join(' + ')+' = '+k*v;
+      return mc({std:'2.OA.C.4',q:'Which number sentence tells how many dots there are?',fig:arraySVG(r,c),answer:rep(r,c),choices:[rep(r,c),`${r} + ${c} = ${r+c}`,rep(r-1,c),rep(r+1,c)]})},
+    ()=>{const odds=new Set();while(odds.size<3){const x=2*R(5,49)+1;odds.add(x)}const ev=2*R(6,49);return mc({std:'2.OA.C.3',q:'Which number is even?',answer:ev,choices:[ev,...odds]})}
+  ],
+  stretch:()=>{const a=R(3,9),b=R(4,9);return num({std:'3.OA.C.7',q:'Multiply.',say:`What is ${a} times ${b}?`,fig:eq(`${a} × ${b} = ?`),answer:a*b})},
+  floor:()=>{const n=R(12,85);return num({std:'1.NBT.C.5',q:`What number is 10 more than <strong>${n}</strong>?`,say:`What number is 10 more than ${n}?`,answer:n+10})}
+},
+{ id:'E', name:'Length', stds:'2.MD.A.1, 2.MD.A.2, 2.MD.A.4', ch:'Ch. 5',
+  core:[
+    ()=>{const s=R(1,4),L=R(4,9);return num({std:'2.MD.A.1',q:'How long is the crayon? Use the ruler.',fig:rulerSVG([{from:s,to:s+L,cls:'f-t2'}]),answer:L,unit:'cm'})},
+    ()=>{const a=R(8,14),b=R(3,a-3);return num({std:'2.MD.A.4',q:'How much longer is the blue ribbon than the yellow ribbon?',fig:rulerSVG([{from:0,to:a,cls:'f-t1'},{from:0,to:b,cls:'f-t2'}]),answer:a-b,unit:'cm'})},
+    ()=>{const n=4*R(4,7),p=pick(NAMES);return mc({std:'2.MD.A.2',q:`${p} measured a desk with paper clips. It was ${n} paper clips long. Then ${p} measured it with pencils, which are longer than paper clips. How many pencils long could the desk be?`,answer:n/4,choices:[n/4,n,n*2,n+10]})}
+  ],
+  stretch:()=>{let w,h;do{w=R(4,9);h=R(2,5)}while(w===h);return num({std:'3.MD.D.8',q:'An ant walks all the way around the edge of this rectangle. How far does it walk?',fig:rectSVG(w,h),answer:2*(w+h),unit:'cm'})},
+  floor:()=>{const lens=shuffle([5,7,9,11]).slice(0,3),names=['blue','yellow','green'];const i=lens.indexOf(Math.max(...lens));return mc({std:'1.MD.A.1',q:'Which ribbon is the longest?',fig:ribbonsSVG(lens,['f-t1','f-t2','f-t3']),answer:names[i],choices:names,fixed:true})}
+},
+{ id:'F', name:'Time and money', stds:'2.MD.C.7, 2.MD.C.8', ch:'Ch. 10',
+  core:[
+    ()=>{const h=R(1,12),m=5*R(1,11);const nh=h%12+1;
+      return mc({std:'2.MD.C.7',q:'What time does the clock show?',fig:clockSVG(h,m),answer:fmt(h,m),choices:fillChoices(fmt(h,m),[fmt(m/5,(h*5)%60),fmt(nh,m),fmt(h,m===55?50:m+5),fmt(h,(m+10)%60),fmt(nh,(m+20)%60)])})},
+    ()=>{const ev=pick([['eat breakfast','7:15','a.m.'],['eat dinner','6:30','p.m.'],['go to bed','8:45','p.m.'],['get to school','8:05','a.m.'],['eat lunch','12:20','p.m.'],['wake up','6:50','a.m.'],['play outside after school','4:10','p.m.']]);
+      return mc({std:'2.MD.C.7',q:`You ${ev[0]} at ${ev[1]}. Is that a.m. or p.m.?`,answer:ev[2],choices:['a.m.','p.m.'],fixed:true})},
+    ()=>{const q=R(0,2),d=R(1,3),n=R(0,2),p=R(1,4);const list=[...Array(q).fill('q'),...Array(d).fill('d'),...Array(n).fill('n'),...Array(p).fill('p')];
+      return num({std:'2.MD.C.8',q:'How much money is this?',fig:coinsSVG(list),answer:25*q+10*d+5*n+p,unit:'¢'})}
+  ],
+  stretch:()=>{const h=R(1,10),m=pick([30,40,45]),dur=pick([35,40,50]),e=m+dur-60;
+    return mc({std:'3.MD.A.1',q:`A movie starts at ${fmt(h,m)}. It lasts ${dur} minutes. What time does it end?`,answer:fmt(h+1,e),choices:fillChoices(fmt(h+1,e),[fmt(h,e),fmt(h+1,e>=10?e-10:e+10),fmt(h+1,e+5),fmt(h,m+dur>=60?e+5:e)])})},
+  floor:()=>{const h=R(1,12),m=pick([0,30]),nh=h%12+1,ph=h===1?12:h-1;
+    return mc({std:'1.MD.B.3',q:'What time does the clock show?',fig:clockSVG(h,m),answer:fmt(h,m),choices:fillChoices(fmt(h,m),[fmt(h,30-m),fmt(nh,m),fmt(ph,m),fmt(nh,30-m)])})}
+},
+{ id:'G', name:'Graphs and data', stds:'2.MD.D.9, 2.MD.D.10', ch:'Ch. 7',
+  core:[
+    ()=>{const cats=['cats','dogs','fish','birds'],cs=shuffle([2,3,4,5,6,7,8]).slice(0,4);let [i,j]=shuffle([0,1,2,3]);if(cs[i]<cs[j])[i,j]=[j,i];
+      return num({std:'2.MD.D.10',q:`This picture graph shows students’ favorite pets. How many more students chose ${cats[i]} than ${cats[j]}?`,fig:picGraphSVG(cats,cs),answer:cs[i]-cs[j]})},
+    ()=>{const f=['apples','bananas','grapes','pears'],cs=f.map(()=>R(2,10)),[i,j]=shuffle([0,1,2,3]);
+      return num({std:'2.MD.D.10',q:`This bar graph shows students’ favorite fruits. How many students chose ${f[i]} or ${f[j]} in all?`,fig:barGraphSVG(f,cs),answer:cs[i]+cs[j]})},
+    ()=>{const vals=[3,4,5,6,7];let cs;do{cs=vals.map(()=>R(0,4))}while(cs[3]+cs[4]===0);
+      return num({std:'2.MD.D.9',q:'Each X is one pencil. How many pencils are longer than 5 inches?',fig:linePlotSVG(vals,cs),answer:cs[3]+cs[4]})}
+  ],
+  stretch:()=>{const sp=['soccer','tennis','swimming'],key=pick([2,5]),ks=sp.map(()=>R(2,6)),i=R(0,2);
+    return num({std:'3.MD.B.3',q:`In this graph, each circle stands for ${key} students. How many students chose ${sp[i]}?`,fig:picGraphSVG(sp,ks,`= ${key} students`),answer:ks[i]*key})},
+  floor:()=>{const cats=['cats','dogs','fish','birds'],cs=shuffle([2,3,4,5,6,7,8]).slice(0,4);
+    return mc({std:'1.MD.C.4',q:'This picture graph shows favorite pets. Which pet did the most students choose?',fig:picGraphSVG(cats,cs),answer:cats[cs.indexOf(Math.max(...cs))],choices:cats,fixed:true})}
+},
+{ id:'H', name:'Shapes and equal shares', stds:'2.G.A.1, 2.G.A.2, 2.G.A.3', ch:'Ch. 11',
+  core:[
+    ()=>{const n=R(3,6),names=['triangle','quadrilateral','pentagon','hexagon'];return mc({std:'2.G.A.1',q:'What is this shape called?',fig:polySVG(n,true),answer:names[n-3],choices:names,fixed:true})},
+    ()=>{const r=R(2,4),c=R(3,6);return num({std:'2.G.A.2',q:'This rectangle is split into rows and columns of small squares. How many small squares are there? Count each small square one time.',fig:gridSVG(r,c),answer:r*c})},
+    ()=>{const k=R(2,4),names=['one half','one third','one fourth'];return mc({std:'2.G.A.3',q:'The shape is split into equal parts. How much of the shape is shaded?',fig:fracSVG(pick(['circle','rect']),k,1),answer:names[k-2],choices:names,fixed:true})}
+  ],
+  stretch:()=>{let b,a;do{b=pick([3,4,6,8]);a=R(2,b-1)}while(a===b-a);
+    return mc({std:'3.NF.A.1',q:'What fraction of the rectangle is shaded?',say:'What fraction of the rectangle is shaded?',fig:fracSVG('rect',b,a),answer:`${a}/${b}`,choices:[`${a}/${b}`,`${b-a}/${b}`,`${a}/${b-a}`,`1/${b}`]})},
+  floor:()=>{const n=R(3,6);return num({std:'1.G.A.1',q:'How many sides does this shape have?',fig:polySVG(n,false),answer:n})}
+}
+];
+
+/* ============ Session ============ */
+let S=null;
+const app=typeof document!=='undefined'?document.getElementById('app'):null;
+const canSpeak=typeof window!=='undefined'&&'speechSynthesis' in window;
+
+function brand(){return `<div class="brand"><img class="logo" src="data:image/png;base64,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" alt="Tessellations logo" width="40" height="42"><span>Tessellations math</span></div>`}
+function tileMark(){return `<svg width="34" height="30" viewBox="0 0 34 30" aria-hidden="true"><path d="M0 30 L8.5 15 L17 30Z" class="f-t1"/><path d="M8.5 15 L17 30 L25.5 15Z" class="f-t2"/><path d="M17 30 L25.5 15 L34 30Z" class="f-t3"/><path d="M8.5 15 L17 0 L25.5 15Z" class="f-t1"/></svg>`}
+
+function hexes(){const r=17,dx=r*1.5,hh=r*Math.sin(Math.PI/3),n=STRANDS.length,W=dx*(n-1)+2*r+6,H=hh*3+6,fills=['f-t1','f-t2','f-t3'];let s='';
+  for(let i=0;i<n;i++){const cx=r+3+i*dx,cy=3+hh+(i%2?hh:0);let pts=[];for(let k=0;k<6;k++){const a=k*Math.PI/3;pts.push(`${f1(cx+r*Math.cos(a))},${f1(cy+r*Math.sin(a))}`)}
+    const done=i<S.si,cur=i===S.si;s+=`<polygon class="hex ${done?fills[i%3]:'f-surf'} ${cur?'s-t1':'s-line'}" stroke-width="${cur?3.5:2}" points="${pts.join(' ')}"/>`}
+  return `<svg width="${Math.round(W*1.25)}" viewBox="0 0 ${f1(W)} ${f1(H)}" role="img" aria-label="Part ${S.si+1} of ${n}">${s}</svg>`}
+
+function renderStart(){
+  app.innerHTML=`${brand()}
+  <p style="margin:0 0 .5rem;font-size:1rem"><a href="assess.html" style="color:var(--muted)">All assessments</a></p>
+  <h1>Math check-in</h1>
+  <p class="lede">Some questions will feel easy and some will feel tricky. That’s how it’s supposed to work. Do your best, and it’s fine to say “I’m not sure.”</p>
+  <label for="nm">Your name</label>
+  <input type="text" id="nm" autocomplete="off">
+  <label class="check"${canSpeak?'':' hidden'}><input type="checkbox" id="auto"> Read each question out loud</label>
+  <button class="primary" id="go" disabled>Start</button>
+  <details class="teacher-note"><summary>For teachers</summary>
+    <p>Prototype Level 2 placement check, aligned to the Level 2 assessment grids (Ch. 1 to 11). Eight strands, three core items each. A strand with 3 of 3 correct gets one Level 3 stretch item; a strand with 0 or 1 correct gets one Level 1 follow-up. Students see no right or wrong feedback.</p>
+    <p>Numbers are generated fresh every time, so each student (and each retake) gets a different form. The report appears at the end behind a “Teacher report” button.</p>
+  </details>`;
+  const nm=document.getElementById('nm'),go=document.getElementById('go');
+  nm.addEventListener('input',()=>go.disabled=!nm.value.trim());
+  nm.addEventListener('keydown',e=>{if(e.key==='Enter'&&nm.value.trim())go.click()});
+  go.onclick=()=>{S={name:nm.value.trim(),date:new Date(),si:0,ci:0,phase:'core',log:[],results:[],auto:canSpeak&&document.getElementById('auto').checked,cur:null};nextItem()};
+  nm.focus();
+}
+
+function nextItem(){const st=STRANDS[S.si];const gen=S.phase==='core'?st.core[S.ci]:st[S.phase];S.cur={...gen(),type:S.phase};renderItem()}
+
+function plain(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent}
+function speak(it){if(!canSpeak)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance((it.say||plain(it.q)).replace(/−/g,' minus ').replace(/¢/g,' cents'));u.rate=.9;speechSynthesis.speak(u)}
+
+function renderItem(){const it=S.cur;let given=null;
+  app.innerHTML=`${brand()}<div class="progress">${hexes()}</div>
+  <section class="card">
+    <div class="qhead"><p class="q" id="q" tabindex="-1">${it.q}</p>${canSpeak?`<button class="ghost read" id="read" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" class="f-ink"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" class="s-ink" stroke-width="2" stroke-linecap="round"/></svg>Read to me</button>`:''}</div>
+    ${it.fig?`<div class="fig-wrap">${it.fig}</div>`:''}
+    <div id="ans"></div>
+    <div class="actions"><button class="ghost" id="skip" type="button">I’m not sure</button><button class="primary" id="next" type="button" disabled>Next</button></div>
+  </section>`;
+  const ans=document.getElementById('ans'),next=document.getElementById('next');
+  if(it.kind==='mc'){const wrap=document.createElement('div');wrap.className='choices';wrap.setAttribute('role','group');wrap.setAttribute('aria-label','Answer choices');
+    it.choices.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='choice'+(it.sym?' sym':'');b.textContent=c;b.setAttribute('aria-pressed','false');
+      if(it.sym)b.setAttribute('aria-label',{'<':'less than','=':'equal to','>':'greater than'}[c]);
+      b.onclick=()=>{wrap.querySelectorAll('.choice').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');given=c;next.disabled=false};wrap.appendChild(b)});
+    ans.appendChild(wrap);document.getElementById('q').focus();
+  }else{ans.innerHTML=`<div class="numrow"><input class="num" id="num" inputmode="numeric" autocomplete="off" aria-label="Your answer">${it.unit?`<span class="unit">${it.unit}</span>`:''}</div>`;
+    const inp=document.getElementById('num');inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^\d]/g,'').slice(0,4);given=inp.value;next.disabled=!inp.value});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value)next.click()});inp.focus()}
+  next.onclick=()=>record(given);
+  document.getElementById('skip').onclick=()=>record(null);
+  const rd=document.getElementById('read');if(rd)rd.onclick=()=>speak(it);
+  if(S.auto)speak(it);
+}
+
+function record(given){if(canSpeak)speechSynthesis.cancel();const it=S.cur,st=STRANDS[S.si];
+  const ok=given!==null&&String(given).trim()===it.answer;
+  S.log.push({strand:st.id,strandName:st.name,type:it.type,std:it.std,q:(it.say||plain(it.q))+(it.fig&&it.fig.startsWith('<div class="eq">')&&!it.say?' '+plain(it.fig):''),answer:it.answer,given:given===null?'(not sure)':given,ok});
+  advance()}
+
+function advance(){const st=STRANDS[S.si];
+  if(S.phase==='core'){S.ci++;if(S.ci<st.core.length)return nextItem();
+    const score=S.log.filter(l=>l.strand===st.id&&l.type==='core'&&l.ok).length;
+    S.results[S.si]={score,rating:score===3?'PRO':score===2?'DEV':'BEG',follow:null};
+    if(score===3){S.phase='stretch';return nextItem()}
+    if(score<=1){S.phase='floor';return nextItem()}
+  }else{S.results[S.si].follow={type:S.phase,ok:S.log[S.log.length-1].ok}}
+  S.si++;S.ci=0;S.phase='core';
+  if(S.si>=STRANDS.length)return renderDone();
+  nextItem()}
+
+function renderDone(){
+  app.innerHTML=`${brand()}<div class="done-wrap"><h1>All done, ${esc(S.name)}!</h1><p class="lede" style="margin:0 auto 2rem">Please let your teacher know you finished.</p><button class="ghost" id="tr" type="button">Teacher report</button></div>`;
+  document.getElementById('tr').onclick=renderReport;document.getElementById('tr').focus()}
+
+const RATING={PRO:'Proficient',DEV:'Developing',BEG:'Beginning'};
+function recommend(){const res=S.results,pro=res.filter(r=>r.rating==='PRO').length,beg=res.filter(r=>r.rating==='BEG').length;
+  const stretchOk=res.filter(r=>r.follow&&r.follow.type==='stretch'&&r.follow.ok).length;
+  const floorMiss=STRANDS.filter((s,i)=>res[i].follow&&res[i].follow.type==='floor'&&!res[i].follow.ok).map(s=>s.name.toLowerCase());
+  const notPro=STRANDS.filter((s,i)=>res[i].rating!=='PRO').map(s=>s.name.toLowerCase());
+  const list=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+  if(pro>=RULES.advance.minPro&&stretchOk>=RULES.advance.minStretch)return{t:'Level 3 is likely too easy',d:`Proficient in all ${STRANDS.length} strands and ${stretchOk} of ${STRANDS.length} Level 3 stretch items correct. Give the Level 3 placement check next.`};
+  if(beg<=RULES.level3.maxBeg&&pro>=RULES.level3.minPro)return{t:'Place in Level 3',d:notPro.length?`Quick review may help in ${list(notPro)}. Level 3 stretch items correct: ${stretchOk}.`:`Level 3 stretch items correct: ${stretchOk} of ${pro}.`};
+  if(beg<=RULES.borderline.maxBeg&&pro>=RULES.borderline.minPro)return{t:'Teacher judgment: Level 3 with support, or Level 2',d:`Not yet proficient in ${list(notPro)}.`};
+  return{t:'Place in Level 2',d:`Proficient in ${pro} of ${STRANDS.length} strands.`+(floorMiss.length?` Also missed the Level 1 follow-up in ${list(floorMiss)}; consider checking Level 1 skills there.`:'')}}
+
+function followText(f){if(!f)return '<span class="std">Not needed</span>';const lvl=f.type==='stretch'?'Level 3 stretch':'Level 1 follow-up';return `${lvl}: <span class="${f.ok?'ok':'no'}">${f.ok?'correct':'missed'}</span>`}
+
+function renderReport(){const rec=recommend(),date=S.date.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  const rows=STRANDS.map((s,i)=>{const r=S.results[i];return `<tr><td><strong>${s.name}</strong><br><span class="std">${s.stds} (${s.ch})</span></td><td>${r.score} of 3</td><td><span class="badge b-${r.rating}">${RATING[r.rating]}</span></td><td>${followText(r.follow)}</td></tr>`}).join('');
+  const logRows=S.log.map(l=>`<tr><td>${l.strand}</td><td>${l.type==='core'?'Core':l.type==='stretch'?'Stretch (L3)':'Follow-up (L1)'}</td><td class="std">${l.std}</td><td>${esc(l.q)}</td><td>${esc(l.answer)}</td><td>${esc(l.given)}</td><td class="${l.ok?'ok':'no'}">${l.ok?'Yes':'No'}</td></tr>`).join('');
+  app.innerHTML=`${brand()}
+  <div class="report-head"><h2>${esc(S.name)}: Level 2 placement report</h2><p>${date}, ${S.log.length} questions</p></div>
+  <div class="rec"><strong>${rec.t}</strong><p>${rec.d}</p></div>
+  <div class="tablewrap"><table><thead><tr><th>Strand</th><th>Core</th><th>Rating</th><th>Follow-up</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <details class="log"><summary>Every question and answer</summary>
+    <div class="tablewrap"><table><thead><tr><th>Strand</th><th>Type</th><th>Standard</th><th>Question</th><th>Answer</th><th>Student</th><th>Correct</th></tr></thead><tbody>${logRows}</tbody></table></div>
+  </details>
+  <div class="report-actions"><button class="primary" id="copy" type="button">Copy results for a spreadsheet</button><button class="ghost" id="again" type="button">Start a new student</button></div>`;
+  document.getElementById('copy').onclick=copyResults;
+  document.getElementById('again').onclick=()=>{S=null;renderStart()}}
+
+function copyResults(){const d=S.date.toISOString().slice(0,10),rec=recommend();
+  const lines=[['Student','Date','Strand','Standards','Core score','Rating','Follow-up','Follow-up result','Recommendation'].join('\t')];
+  STRANDS.forEach((s,i)=>{const r=S.results[i];lines.push([S.name,d,s.name,s.stds,`${r.score}/3`,RATING[r.rating],r.follow?(r.follow.type==='stretch'?'Level 3 stretch':'Level 1 follow-up'):'',r.follow?(r.follow.ok?'correct':'missed'):'',i===0?rec.t:''].join('\t'))});
+  lines.push('');lines.push(['Student','Strand','Type','Standard','Question','Answer','Student answer','Correct'].join('\t'));
+  S.log.forEach(l=>lines.push([S.name,l.strandName,l.type,l.std,l.q,l.answer,l.given,l.ok?'yes':'no'].join('\t')));
+  const text=lines.join('\n'),btn=document.getElementById('copy');
+  const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy results for a spreadsheet',2000)};
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done,fallback);else fallback()}
+
+if(app)renderStart();
+if(typeof module!=='undefined')module.exports={STRANDS};
+</script>
+</body>
+</html>
