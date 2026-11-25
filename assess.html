@@ -36,6 +36,7 @@ a.test:hover{border-color:var(--t1)}
 a.test:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .lvl{flex:none;width:3.2rem;height:3.2rem;display:grid;place-items:center;font-size:1.5rem;font-weight:700;color:#fff;
   background:var(--t1);clip-path:polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0 50%)}
+li:nth-child(3n+2) .lvl{background:var(--t3)}li:nth-child(3n) .lvl{background:var(--t2);color:#2b1f05}
 .test strong{display:block;font-size:1.3rem}
 .test span.d{color:var(--muted);font-size:1rem}
 .more{color:var(--muted);margin-top:1.5rem;font-size:1rem}
@@ -51,6 +52,10 @@ a.test:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
     <li><a class="test" href="level2-placement.html">
       <span class="lvl" aria-hidden="true">2</span>
       <strong>Level 2 math</strong>
+    </a></li>
+    <li><a class="test" href="level3-placement.html">
+      <span class="lvl" aria-hidden="true">3</span>
+      <strong>Level 3 math</strong>
     </a></li>
     <!-- To add a level, copy the <li> above and change the link, number, and description. -->
   </ul>
