@@ -71,7 +71,7 @@ button{font:inherit;cursor:pointer}
 .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-bottom:1.25rem}
 .choices.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:520px){.choices.c3{grid-template-columns:1fr}.choice{font-size:1.1rem;padding:.5rem .4rem}.choice.sym{font-size:1.8rem}}
-.choice{overflow-wrap:anywhere;hyphens:auto}
+.choice{overflow-wrap:anywhere;hyphens:auto}.nw{white-space:nowrap}
 .choice{background:var(--paper);color:var(--ink);border:2px solid var(--line);border-radius:14px;min-height:4rem;padding:.6rem;font-size:1.35rem;font-weight:700}
 .choice[aria-pressed="true"]{border-color:var(--t1);background:var(--sel);box-shadow:inset 0 0 0 2px var(--t1)}
 .choice.sym{font-size:2rem}
@@ -133,6 +133,7 @@ const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const uniq=a=>[...new Set(a.map(String))];
+const nw=s=>String(s).replace(/(\d+ )?\d+\/\d+/g,m=>`<span class="nw">${m}</span>`);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const f1=n=>n.toFixed(1);
 const fmt=(h,m)=>`${h}:${String(m).padStart(2,'0')}`;
@@ -681,14 +682,14 @@ function speak(it){if(!canSpeak)return;speechSynthesis.cancel();const u=new Spee
 function renderItem(){const it=S.cur;let given=null;
   app.innerHTML=`${brand()}<div class="progress">${hexes()}</div>
   <section class="card">
-    <div class="qhead"><p class="q" id="q" tabindex="-1">${it.q}</p>${canSpeak?`<button class="ghost read" id="read" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" class="f-ink"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" class="s-ink" stroke-width="2" stroke-linecap="round"/></svg>Read to me</button>`:''}</div>
+    <div class="qhead"><p class="q" id="q" tabindex="-1">${nw(it.q)}</p>${canSpeak?`<button class="ghost read" id="read" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" class="f-ink"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" class="s-ink" stroke-width="2" stroke-linecap="round"/></svg>Read to me</button>`:''}</div>
     ${it.fig?`<div class="fig-wrap">${it.fig}</div>`:''}
     <div id="ans"></div>
     <div class="actions"><button class="ghost" id="skip" type="button">I’m not sure</button><button class="primary" id="next" type="button" disabled>Next</button></div>
   </section>`;
   const ans=document.getElementById('ans'),next=document.getElementById('next');
   if(it.kind==='mc'){const wrap=document.createElement('div');wrap.className='choices'+(it.choices.length===3?' c3':'');wrap.setAttribute('role','group');wrap.setAttribute('aria-label','Answer choices');
-    it.choices.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='choice'+(it.sym?' sym':'');b.textContent=c;b.setAttribute('aria-pressed','false');
+    it.choices.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='choice'+(it.sym?' sym':'');b.innerHTML=nw(esc(c));b.setAttribute('aria-pressed','false');
       if(it.sym)b.setAttribute('aria-label',{'<':'less than','=':'equal to','>':'greater than'}[c]);
       b.onclick=()=>{wrap.querySelectorAll('.choice').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');given=c;next.disabled=false};wrap.appendChild(b)});
     ans.appendChild(wrap);document.getElementById('q').focus();

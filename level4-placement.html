@@ -71,7 +71,7 @@ button{font:inherit;cursor:pointer}
 .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-bottom:1.25rem}
 .choices.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:520px){.choices.c3{grid-template-columns:1fr}.choice{font-size:1.1rem;padding:.5rem .4rem}.choice.sym{font-size:1.8rem}}
-.choice{overflow-wrap:anywhere;hyphens:auto}
+.choice{overflow-wrap:anywhere;hyphens:auto}.nw{white-space:nowrap}
 .choice{background:var(--paper);color:var(--ink);border:2px solid var(--line);border-radius:14px;min-height:4rem;padding:.6rem;font-size:1.35rem;font-weight:700}
 .choice[aria-pressed="true"]{border-color:var(--t1);background:var(--sel);box-shadow:inset 0 0 0 2px var(--t1)}
 .choice.sym{font-size:2rem}
@@ -133,6 +133,7 @@ const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const uniq=a=>[...new Set(a.map(String))];
+const nw=s=>String(s).replace(/(\d+ )?\d+\/\d+/g,m=>`<span class="nw">${m}</span>`);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const f1=n=>n.toFixed(1);
 const fmt=(h,m)=>`${h}:${String(m).padStart(2,'0')}`;
@@ -425,6 +426,7 @@ const L3STRANDS=[
 
 /* ============ Level 4 ============ */
 const L3core=(id,k)=>L3STRANDS.find(s=>s.id===id).core[k]();
+const gcdL4=(a,b)=>b?gcdL4(b,a%b):a;
 function toMixed(n,d){const w=Math.floor(n/d),r=n%d;return r?(w?`${w} ${r}/${d}`:`${r}/${d}`):String(w)}
 const hund=n=>(n/100).toFixed(2);
 
@@ -532,10 +534,10 @@ const STRANDS=[
     ()=>{let fr;do{const seen=new Set();fr=[];while(fr.length<4){const d=pick([3,4,5,6,8,10,12]),n=R(1,d-1),v=n/d;if(![...seen].some(x=>Math.abs(x-v)<1e-9)){seen.add(v);fr.push([n,d,v])}}}while(false);
       const best=fr.reduce((a,b)=>b[2]>a[2]?b:a);return mc({std:'4.NF.A.2',q:'Which fraction is the greatest?',answer:`${best[0]}/${best[1]}`,choices:fr.map(f=>`${f[0]}/${f[1]}`)})},
     ()=>{const d=pick([3,4,5,6,8]);
-      if(R(0,1)){const w1=R(1,4),w2=R(1,3),n1=R(2,d-1),n2=R(d-n1+1,d-1);if(n2<=d-n1||n2>d-1)return STRANDS[2].core[1]();
+      if(R(0,1)){const w1=R(1,4),w2=R(1,3);let n1,n2;do{n1=R(2,d-1);n2=R(d-n1+1,d-1)}while(gcdL4(n1,d)>1||gcdL4(n2,d)>1);if(n2<=d-n1||n2>d-1)return STRANDS[2].core[1]();
         const right=toMixed((w1+w2)*d+n1+n2,d);
         return mc({std:'4.NF.B.3',q:`Add. <strong>${w1} ${n1}/${d} + ${w2} ${n2}/${d}</strong>`,say:`What is ${w1} and ${n1} ${d}ths plus ${w2} and ${n2} ${d}ths?`,answer:right,choices:fillChoices(right,[`${w1+w2} ${n1+n2-d}/${d}`,`${w1+w2} ${n1+n2}/${2*d}`,`${w1+w2+1} ${n1+n2}/${d}`,`${w1+w2+2} ${n1+n2-d}/${d}`])})}
-      const w1=R(4,7),w2=R(1,w1-2),n1=R(1,d-2),n2=R(n1+1,d-1),right=toMixed((w1*d+n1)-(w2*d+n2),d);
+      const w1=R(4,7),w2=R(1,w1-2);let n1,n2;do{n1=R(1,d-2);n2=R(n1+1,d-1)}while(gcdL4(n1,d)>1||gcdL4(n2,d)>1);const right=toMixed((w1*d+n1)-(w2*d+n2),d);
       return mc({std:'4.NF.B.3',q:`Subtract. <strong>${w1} ${n1}/${d} − ${w2} ${n2}/${d}</strong>`,say:`What is ${w1} and ${n1} ${d}ths minus ${w2} and ${n2} ${d}ths?`,answer:right,choices:fillChoices(right,[`${w1-w2} ${n2-n1}/${d}`,`${w1-w2} ${d+n1-n2}/${d}`,`${w1-w2-1} ${n2-n1}/${d}`,`${w1-w2+1} ${n2-n1}/${d}`])})},
     ()=>{const w=R(3,6),b=pick([3,4,5,6,8]),a=R(1,b-1),right=`${w*a}/${b}`;
       return mc({std:'4.NF.B.4',q:`Which is equal to <strong>${w} × ${a}/${b}</strong>?`,say:`Which is equal to ${w} times ${a} over ${b}?`,answer:right,choices:fillChoices(right,[`${w*a}/${w*b}`,`${a}/${w*b}`,`${w+a}/${b}`,`${a}/${b}`])})}
@@ -669,14 +671,14 @@ function speak(it){if(!canSpeak)return;speechSynthesis.cancel();const u=new Spee
 function renderItem(){const it=S.cur;let given=null;
   app.innerHTML=`${brand()}<div class="progress">${hexes()}</div>
   <section class="card">
-    <div class="qhead"><p class="q" id="q" tabindex="-1">${it.q}</p>${canSpeak?`<button class="ghost read" id="read" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" class="f-ink"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" class="s-ink" stroke-width="2" stroke-linecap="round"/></svg>Read to me</button>`:''}</div>
+    <div class="qhead"><p class="q" id="q" tabindex="-1">${nw(it.q)}</p>${canSpeak?`<button class="ghost read" id="read" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" class="f-ink"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" class="s-ink" stroke-width="2" stroke-linecap="round"/></svg>Read to me</button>`:''}</div>
     ${it.fig?`<div class="fig-wrap">${it.fig}</div>`:''}
     <div id="ans"></div>
     <div class="actions"><button class="ghost" id="skip" type="button">I’m not sure</button><button class="primary" id="next" type="button" disabled>Next</button></div>
   </section>`;
   const ans=document.getElementById('ans'),next=document.getElementById('next');
   if(it.kind==='mc'){const wrap=document.createElement('div');wrap.className='choices'+(it.choices.length===3?' c3':'');wrap.setAttribute('role','group');wrap.setAttribute('aria-label','Answer choices');
-    it.choices.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='choice'+(it.sym?' sym':'');b.textContent=c;b.setAttribute('aria-pressed','false');
+    it.choices.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='choice'+(it.sym?' sym':'');b.innerHTML=nw(esc(c));b.setAttribute('aria-pressed','false');
       if(it.sym)b.setAttribute('aria-label',{'<':'less than','=':'equal to','>':'greater than'}[c]);
       b.onclick=()=>{wrap.querySelectorAll('.choice').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');given=c;next.disabled=false};wrap.appendChild(b)});
     ans.appendChild(wrap);document.getElementById('q').focus();
