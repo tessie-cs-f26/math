@@ -157,14 +157,15 @@ function blocksSVG(h,t,o){let x=8,s='';
   for(let i=0;i<o;i++)s+=`<rect x="${x+(i%3)*10}" y="${8+Math.floor(i/3)*10}" width="7" height="7" class="f-t2 s-ink" stroke-width="1"/>`;
   return svg(x+(o?32:0)+8,76,s,'Base-ten blocks',1.35)}
 
-function rulerSVG(bars,maxCm=15){const u=32,L=20,top=8,bh=20,gap=14,ry=top+bars.length*(bh+gap)+6,W=L*2+maxCm*u;let s='';
+function rulerSVG(bars,maxCm=15){const u=32,L=20,top=8,bh=20,gap=14,ry=top+bars.length*(bh+gap)+6,W=L*2+maxCm*u+40;let s='';
   bars.forEach((b,i)=>{const y=top+i*(bh+gap);
     s+=`<rect x="${L+b.from*u}" y="${y}" width="${(b.to-b.from)*u}" height="${bh}" rx="6" class="${b.cls} s-ink" stroke-width="1.5"/>`;
     for(const e of [b.from,b.to])s+=`<line x1="${L+e*u}" y1="${y+bh}" x2="${L+e*u}" y2="${ry}" class="s-muted" stroke-width="1.2" stroke-dasharray="3 3"/>`});
-  s+=`<rect x="${L-12}" y="${ry}" width="${maxCm*u+24}" height="46" rx="4" class="f-surf s-ink" stroke-width="1.5"/>`;
+  s+=`<rect x="${L-12}" y="${ry}" width="${maxCm*u+64}" height="46" rx="4" class="f-surf s-ink" stroke-width="1.5"/>`;
   for(let c=0;c<=maxCm;c++){const x=L+c*u;
     s+=`<line x1="${x}" y1="${ry}" x2="${x}" y2="${ry+16}" class="s-ink" stroke-width="1.5"/><text x="${x}" y="${ry+36}" text-anchor="middle" font-size="14">${c}</text>`;
     if(c<maxCm)s+=`<line x1="${x+u/2}" y1="${ry}" x2="${x+u/2}" y2="${ry+8}" class="s-ink" stroke-width="1"/>`}
+  s+=`<text x="${L+maxCm*u+32}" y="${ry+36}" text-anchor="middle" font-size="15" font-weight="700">cm</text>`;
   return svg(W,ry+52,s,'Centimeter ruler',1.25)}
 
 function ribbonsSVG(lens,cls){let s='';lens.forEach((L,i)=>s+=`<rect x="10" y="${10+i*36}" width="${L*26}" height="22" rx="6" class="${cls[i]} s-ink" stroke-width="1.5"/>`);
