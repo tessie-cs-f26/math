@@ -121,7 +121,8 @@ const RULES = {
   // Strand rating from the 3 core items: 3 = PRO, 2 = DEV, 0-1 = BEG
   advance:   { minPro: 9, minStretch: 7 },  // try the Level 4 placement next
   levelUp:   { maxBeg: 0, minPro: 7 },      // place in Level 4
-  borderline:{ maxBeg: 1, minPro: 5 }       // teacher judgment
+  borderline:{ maxBeg: 1, minPro: 5 },      // teacher judgment
+  dropBack:  { minFloorMiss: 3 }         // place in Level 2
 };
 
 /* ============ Helpers ============ */
@@ -530,6 +531,7 @@ function recommend(){const res=S.results,n=STRANDS.length,pro=res.filter(r=>r.ra
   if(pro>=RULES.advance.minPro&&stretchOk>=RULES.advance.minStretch)return{t:`Level ${NEXT} is likely too easy`,d:`Proficient in all ${n} strands and ${stretchOk} of ${n} Level ${NEXT} stretch items correct. Give the Level ${NEXT} placement check next.`};
   if(beg<=RULES.levelUp.maxBeg&&pro>=RULES.levelUp.minPro)return{t:`Place in Level ${NEXT}`,d:notPro.length?`Quick review may help in ${list(notPro)}. Level ${NEXT} stretch items correct: ${stretchOk}.`:`Level ${NEXT} stretch items correct: ${stretchOk} of ${pro}.`};
   if(beg<=RULES.borderline.maxBeg&&pro>=RULES.borderline.minPro)return{t:`Teacher judgment: Level ${NEXT} with support, or Level ${LEVEL}`,d:`Not yet proficient in ${list(notPro)}.`};
+  if(floorMiss.length>=RULES.dropBack.minFloorMiss)return{t:`Place in Level ${PREV}`,d:`Missed the Level ${PREV} follow-up in ${floorMiss.length} strands (${list(floorMiss)}). Gaps this wide would make Level ${LEVEL} hard to start. Confirm with the Level ${PREV} placement check.`};
   return{t:`Place in Level ${LEVEL}`,d:`Proficient in ${pro} of ${n} strands.`+(floorMiss.length?` Also missed the Level ${PREV} follow-up in ${list(floorMiss)}; consider giving the Level ${PREV} placement check.`:'')}}
 
 function followText(f){if(!f)return '<span class="std">Not needed</span>';const lvl=f.type==='stretch'?`Level ${NEXT} stretch`:`Level ${PREV} follow-up`;return `${lvl}: <span class="${f.ok?'ok':'no'}">${f.ok?'correct':'missed'}</span>`}
