@@ -107,6 +107,15 @@ details.log summary{cursor:pointer;font-weight:700;margin-bottom:.75rem}
 <body>
 <main id="app"></main>
 <script>
+/* ============ Results form (Google Form on the school account) ============ */
+const FORM = {
+  url: 'https://docs.google.com/forms/d/e/1FAIpQLSfvnQS-miBLMUcj7RYBBXZJE5_2OQSKlJ9jz0-HVIHYHKVifA/formResponse',
+  assessment: 'entry.1432208258', student: 'entry.671849451', recommendation: 'entry.1874033440',
+  strands: 'entry.1217998323', answers: 'entry.115469363'
+};
+const ASSESSMENT_NAME = 'Level 2';
+const STORE_KEY = 'tessie-placement-results';
+
 /* ============ Placement rules (tune these) ============ */
 const RULES = {
   // Strand rating from the 3 core items: 3 = PRO, 2 = DEV, 0-1 = BEG
@@ -308,6 +317,27 @@ const STRANDS=[
 }
 ];
 
+
+/* ============ Saving results ============ */
+function loadSaved(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||[]}catch(e){return []}}
+function writeSaved(list){try{localStorage.setItem(STORE_KEY,JSON.stringify(list.slice(-200)))}catch(e){}}
+function buildPayload(){const rec=recommend();
+  const strands=STRANDS.map((st,i)=>{const r=S.results[i];let t=`${st.name}: ${RATING[r.rating]} ${r.score}/3`;
+    if(r.follow)t+=`, ${r.follow.type==='stretch'?'Level 3 stretch':'Level 1 follow-up'} ${r.follow.ok?'correct':'missed'}`;return t}).join('\n');
+  const answers=S.log.map((l,i)=>`${i+1}. [${l.strandName}, ${l.type}, ${l.std}] ${l.q} | answer: ${l.answer} | student: ${l.given} | ${l.ok?'correct':'wrong'}`).join('\n');
+  return {id:Date.now()+'-'+Math.random().toString(36).slice(2,7),assessment:ASSESSMENT_NAME,student:S.name,recommendation:rec.t+'. '+rec.d,strands,answers,sent:false}}
+async function sendPayload(p){const body=new URLSearchParams();
+  body.append(FORM.assessment,p.assessment);body.append(FORM.student,p.student);body.append(FORM.recommendation,p.recommendation);
+  body.append(FORM.strands,p.strands);body.append(FORM.answers,p.answers);
+  await fetch(FORM.url,{method:'POST',mode:'no-cors',body});return true}
+async function saveResult(){const p=buildPayload();const list=loadSaved();list.push(p);writeSaved(list);
+  try{await sendPayload(p);p.sent=true}catch(e){p.sent=false}
+  const l2=loadSaved();const m=l2.find(x=>x.id===p.id);if(m){m.sent=p.sent;writeSaved(l2)}
+  S.saveStatus=p.sent?'sent':'local';const el=document.getElementById('savestatus');if(el)el.innerHTML=statusText()}
+async function retryUnsent(){const list=loadSaved();let changed=false;
+  for(const p of list.filter(x=>!x.sent)){try{await sendPayload(p);p.sent=true;changed=true}catch(e){break}}
+  if(changed)writeSaved(list)}
+function statusText(){return S.saveStatus==='sent'?'<span class="ok">Sent to the results sheet.</span>':S.saveStatus==='local'?'<span class="no">Couldn’t reach the results sheet. Saved on this computer; it will send automatically the next time this page opens with internet.</span>':'Saving…'}
 /* ============ Session ============ */
 let S=null;
 const app=typeof document!=='undefined'?document.getElementById('app'):null;
@@ -386,6 +416,7 @@ function advance(){const st=STRANDS[S.si];
   nextItem()}
 
 function renderDone(){
+  S.saveStatus='saving';saveResult();
   app.innerHTML=`${brand()}<div class="done-wrap"><h1>All done, ${esc(S.name)}!</h1><p class="lede" style="margin:0 auto 2rem">Please let your teacher know you finished.</p><button class="ghost" id="tr" type="button">Teacher report</button></div>`;
   document.getElementById('tr').onclick=renderReport;document.getElementById('tr').focus()}
 
@@ -408,6 +439,7 @@ function renderReport(){const rec=recommend(),date=S.date.toLocaleDateString(und
   app.innerHTML=`${brand()}
   <div class="report-head"><h2>${esc(S.name)}: Level 2 placement report</h2><p>${date}, ${S.log.length} questions</p></div>
   <div class="rec"><strong>${rec.t}</strong><p>${rec.d}</p></div>
+  <p id="savestatus" style="font-size:1rem">${statusText()}</p>
   <div class="tablewrap"><table><thead><tr><th>Strand</th><th>Core</th><th>Rating</th><th>Follow-up</th></tr></thead><tbody>${rows}</tbody></table></div>
   <details class="log"><summary>Every question and answer</summary>
     <div class="tablewrap"><table><thead><tr><th>Strand</th><th>Type</th><th>Standard</th><th>Question</th><th>Answer</th><th>Student</th><th>Correct</th></tr></thead><tbody>${logRows}</tbody></table></div>
@@ -426,7 +458,7 @@ function copyResults(){const d=S.date.toISOString().slice(0,10),rec=recommend();
   const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done,fallback);else fallback()}
 
-if(app)renderStart();
+if(app){renderStart();retryUnsent()}
 if(typeof module!=='undefined')module.exports={STRANDS};
 </script>
 </body>
